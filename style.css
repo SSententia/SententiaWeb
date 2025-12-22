@@ -1,0 +1,102 @@
+/* global styles */
+/* (Friendly reminder: make it mobile compatible) */
+
+body {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  font-family: Verdana;
+}
+
+.test {
+  background-color: purple;
+}
+
+.home-page {
+  background-image: url(https://file.garden/aGaA2pIcQiyAwVuB/SYSTEM_RESOURCES/IMAGES/STARS.webp);
+  background-size: 200%;
+  background-repeat: repeat;
+  background-position: center;
+  transition: background-position 0.1s;
+  overflow: hidden
+}
+
+.glow {
+  font-size: 80px;
+  color: #53ff78;
+  text-align: center;
+  animation: glow 1s ease-in-out infinite alternate-reverse;
+  height: auto;
+  width: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: stat_ft;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px #53ff78, 0 0 20px #53ff78, 0 0 30px #28ae65, 0 0 40px #28ae65, 0 0 50px #28ae65, 0 0 60px #28ae65, 0 0 70px #28ae65;
+  }
+
+  to {
+    text-shadow: 0 0 20px #53ff78, 0 0 30px #6fca83, 0 0 40px #6fca83, 0 0 50px #6fca83, 0 0 60px #6fca83, 0 0 70px #6fca83, 0 0 80px #6fca83;
+  }
+}
+
+@font-face {
+  font-family: stat_ft;
+  src: url(LOCAL_SYSRES/FONTS/stat_ft.ttf);
+}
+
+.program {
+  font-family: 'Pixelated MS Sans Serif';
+  text-align: justify;
+  width: 32px;
+}
+
+.program img {
+  display: block;
+  margin: 0 auto;
+}
+
+.roboto-mono {
+  font-family: "Roboto Mono", monospace;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  color: #333
+}
+
+.hl {
+  border: dotted;
+  border-top: 3px solid #333;
+  border-left: none;
+  border-right: none;
+  color: #333;
+  overflow: visible;
+  text-align: right;
+  margin-right: 0;
+  height: 5px;
+  width: 75%;
+  position: relative;
+}
+
+.hl::after {
+  background: #fff;
+  content: "<o>";
+  padding: 0 4px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -9px;
+}
+
+.vl {
+  border: 3px solid;
+  height: 100%;
+  position: absolute;
+  left: 25%;
+  top: -5px;
+}

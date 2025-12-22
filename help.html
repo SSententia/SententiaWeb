@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>need something?</title>
+  <link rel="icon" type="image/x-icon" href="LOCAL_SYSRES/MEDIA/HELP/help1.ico">
+  <link rel="stylesheet" href="https://unpkg.com/98.css" />
+  <!--98.css https://github.com/jdan/98.css-->
+  <!--Copyright (c) 2020 Jordan Scales <thatjdanisso.cool>-->
+  <!--https://github.com/jdan/98.css/blob/main/LICENSE-->
+  <style>
+    body {
+      background-color: #008080;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: "MS Sans Serif", Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #desktop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 28px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 80px);
+      grid-template-rows: repeat(auto-fill, 80px);
+      grid-auto-flow: column;
+      gap: 20px;
+      z-index: 0;
+    }
+
+    .desktop-icon {
+      width: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .desktop-icon img {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 4px;
+    }
+
+    .desktop-icon span {
+      color: white;
+      font-size: 11px;
+      text-shadow: 1px 1px 1px black;
+      padding: 2px;
+    }
+
+    .desktop-icon:hover span {
+      background-color: #000080;
+    }
+
+    #taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: silver;
+      box-shadow: inset 1px 1px #dfdfdf, 1px 0 #000, 0 1px #000, 1px 1px #000;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      z-index: 1000;
+    }
+
+    #start-button {
+      height: 22px;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+      margin-right: 4px;
+    }
+
+    #start-button.active {
+      box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+      padding: 1px 5px 0 7px;
+    }
+
+    #start-button img {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+
+    #taskbar-tray {
+      margin-left: auto;
+      height: 22px;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      box-shadow: inset -1px -1px #ffffff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+      background: silver;
+      font-size: 11px;
+    }
+
+    #taskbar-tray img {
+      width: 16px;
+      height: 16px;
+      margin-right: 6px;
+    }
+
+    #start-menu {
+      position: fixed;
+      bottom: 28px;
+      left: 2px;
+      width: 200px;
+      background: silver;
+      box-shadow: 2px 2px 0 #000;
+      display: none;
+      z-index: 1001;
+      padding: 2px;
+    }
+
+    .start-menu-sidebar {
+      width: 25px;
+      background: linear-gradient(to top, #000080, #1084d0);
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      left: 2px;
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 10px;
+    }
+
+    .start-menu-sidebar span {
+      color: white;
+      font-weight: bold;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      white-space: nowrap;
+      font-size: 14px;
+      margin-left: 5px;
+    }
+
+    .start-menu-content {
+      margin-left: 28px;
+    }
+
+    .start-menu-item {
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .start-menu-item:hover {
+      background-color: #000080;
+      color: white;
+    }
+
+    .start-menu-item img {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
+
+    .start-menu-divider {
+      height: 1px;
+      background: #808080;
+      border-bottom: 1px solid #ffffff;
+      margin: 2px 0;
+    }
+
+    #shutdown-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffaa00;
+      font-family: "Courier New", Courier, monospace;
+      text-align: center;
+    }
+
+    #shutdown-overlay img {
+      max-width: 80%;
+      margin-bottom: 20px;
+    }
+
+    #about-window-body {
+      background: linear-gradient(to top, #000080, #1084d0);
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #about-window-body span {
+      color: white;
+      text-shadow: none;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      #desktop {
+        grid-template-columns: repeat(auto-fill, 70px);
+        gap: 10px;
+      }
+
+      .desktop-icon {
+        width: 60px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!--Desktop Icons-->
+  <div id="desktop">
+    <div class="desktop-icon" onclick="openWindow('help1')">
+      <img src="LOCAL_SYSRES/MEDIA/HELP/help2.ico" alt="Help Page">
+      <span>Help Page</span>
+    </div>
+
+    <div class="desktop-icon" onclick="openWindow('folder-window')">
+      <img src="LOCAL_SYSRES/MEDIA/HELP/folder.ico" alt="New folder (2)">
+      <span>New folder (2)</span>
+    </div>
+
+    <div class="desktop-icon" onclick="window.location.href='https://sententia.neocities.org/'">
+      <img src="LOCAL_SYSRES/MEDIA/HELP/goback.jpg" alt="New folder (2)">
+      <span>Go back to my cool website</span>
+    </div>
+
+    <!-- Help1 window-->
+    <div class="window" style="position: absolute; z-index: 1; top: 50px; left: 100px;" id="help1">
+      <div class="title-bar">
+        <div class="title-bar-text"><img src="LOCAL_SYSRES/MEDIA/HELP/help2.ico" style="width: 12px; height: 12px;"> The
+          Help
+          Page</div>
+        <div class="title-bar-controls">
+          <button aria-label="Help" onclick="openWindow('help2')"></button>
+          <button aria-label="Close" onclick="closeWindow(this)"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <menu role="tablist">
+          <li role="tab" aria-selected="true"><a href="#tab1">About</a></li>
+          <li role="tab"><a href="#tab2">Website Issues</a></li>
+          <li role="tab"><a href="#tab3">QnA's</a></li>
+          <li role="tab"><a href="#tab4">Misc</a></li>
+        </menu>
+        <div class="window" id="tab1" role="tabpanel" style="display: block;">
+          <div class="window-body">
+            <p>the tab content</p>
+            <div class="status-bar">
+              <p class="status-bar-field">Made with love <3 (and 98.css)</p>
+                  <p class="status-bar-field">Press F1 for nothing</p>
+                  <p class="status-bar-field" id="number"></p>
+            </div>
+          </div>
+        </div>
+        <div class="window" id="tab2" role="tabpanel" style="display: none;">
+          <div class="window-body">
+            <p>the tab 2 content</p>
+          </div>
+        </div>
+        <div class="window" id="tab3" role="tabpanel" style="display: none;">
+          <div class="window-body">
+            <p>Content for Tab 3</p>
+          </div>
+        </div>
+        <div class="window" id="tab4" role="tabpanel" style="display: none;">
+          <div class="window-body">
+            <p>Content for Tab 4</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The duck -->
+    <div class="window" style="position: absolute; top: 25vh; left: 30vw; width: 170px;" id="duck-window">
+      <div class="title-bar">
+        <div class="title-bar-text">duck?</div>
+        <div class="title-bar-controls">
+          <button aria-label="Close" onclick="closeWindow(this)"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <img src="LOCAL_SYSRES/MEDIA/HELP/duck.gif" alt="A dancing duck" style="width: 100%; height: 100%;">
+        <div class="field-row">
+          <input id="radio1" type="radio" name="options" onclick="acknowledgement()">
+          <label for="radio1">It is a duck</label>
+        </div>
+        <div class="field-row">
+          <input id="radio2" type="radio" name="options" onclick="acknowledgement()">
+          <label for="radio2">It's a goose</label>
+        </div>
+        <div class="field-row">
+          <input id="radio3" type="radio" name="options" onclick="acknowledgement()">
+          <label for="radio3">It's a swan, you moron</label>
+        </div>
+        <button disabled onclick="closeWindow(this)" id="acknol" style="margin-top: 7px;">Acknowledge the
+          creature</button>
+      </div>
+    </div>
+
+    <!-- Help2 window-->
+    <div class="window" style="width: 300px; position: absolute; top: 40vh; left: 10vw; display: none;" id="help2">
+      <div class="title-bar">
+        <div class="title-bar-text">Help</div>
+        <div class="title-bar-controls">
+          <button aria-label="Help"></button>
+          <button aria-label="Close" onclick="closeWindow(this)"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <p style="margin-top: 15px;"> <img src="LOCAL_SYSRES/MEDIA/HELP/help3.ico"
+            style="margin-right: 15px; position: relative; top: -5px; float: left;">That help window doesn't need to
+          have it's own<br>help window, silly. What did you expect?</p>
+        <button class="default" onclick="closeWindow(this)"
+          style="position:relative; left: 50%; transform: translateX(-50%);">OK</button>
+      </div>
+    </div>
+
+    <!-- New folder (2) window -->
+    <div class="window" style="width: 300px; position: absolute; top: 100px; left: 200px; display: none;"
+      id="folder-window">
+      <div class="title-bar">
+        <div class="title-bar-text">New folder (2)</div>
+        <div class="title-bar-controls">
+          <button aria-label="Close" onclick="closeWindow(this)"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 10px;">
+          <div class="desktop-icon" onclick="openWindow('duck-window')" style="width: auto;">
+            <img src="LOCAL_SYSRES/MEDIA/HELP/ddi.ico" alt="Daily Duck Identifier">
+            <span style="color: black; text-shadow: none;">Daily Duck Identifier</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About window -->
+    <div class="window" style="position: absolute; top: 50vh; left: 50vw; display: none; width: 300px;"
+      id="about-window">
+      <div class="title-bar">
+        <div class="title-bar-text">About</div>
+        <div class="title-bar-controls">
+          <button aria-label="Close" onclick="closeWindow(this)"></button>
+        </div>
+      </div>
+      <div class="window-body" id="about-window-body">
+        <span>Windows 98b</span>
+      </div>
+      <div class="status-bar">
+        <p class="status-bar-field">Windows 98b, the operating system nobody asked for! Created in 1998+27, it was a way
+          for people to experience Windows 98 from a different perspective. It is up to date with the latest,
+          revolutionary technologies. The great innovations we utilize include removing 98% of features the user won't
+          probably use. This was proven to reduce 1.998 megabytes of system data, which means roughly 42 more pictures
+          can
+          be stored. We hope you will have the best experience with this operating system.</p>
+        <div class="status-bar-field">
+          <p>Version 1 Update 98 (Build 1.1.0_98-b)</p>
+          <p>Uncopyrighted. Not affiliated with Microsoft. All left unreserved</p>
+          <p>For more information about Windows 98b and to explore more of our greatest innovations, visit
+            https://www.example.com</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Menu -->
+  <div id="start-menu">
+    <div class="start-menu-sidebar">
+      <span style="margin-left: 20px;">Poorly made Windows 98b</span>
+    </div>
+    <div class="start-menu-content">
+      <div class="start-menu-item" onclick="openWindow('about-window'); toggleStartMenu()">
+        <img src="LOCAL_SYSRES/MEDIA/HELP/pc.ico" alt="About">
+        <span>About</span>
+      </div>
+      <div class="start-menu-item" onclick="openWindow('help1'); toggleStartMenu()">
+        <img src="LOCAL_SYSRES/MEDIA/HELP/help2.ico" alt="Help">
+        <span>Help Page</span>
+      </div>
+      <div class="start-menu-item" onclick="openWindow('folder-window'); toggleStartMenu()">
+        <img src="LOCAL_SYSRES/MEDIA/HELP/folder.ico" alt="Folder">
+        <span>New folder (2)</span>
+      </div>
+      <div class="start-menu-divider"></div>
+      <div class="start-menu-item" onclick="shutdown()">
+        <img src="LOCAL_SYSRES/MEDIA/HELP/shutdown.ico" alt="Shutdown">
+        <span>Shutdown...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Taskbar -->
+  <div id="taskbar">
+    <button id="start-button" onclick="toggleStartMenu()">
+      <img src="LOCAL_SYSRES/MEDIA/HELP/start.ico" alt="Start">
+      <span style="margin-left: 5px;">Start</span>
+    </button>
+    <div id="taskbar-tray">
+      <img src="LOCAL_SYSRES/MEDIA/HELP/speaker.ico" alt="Volume">
+      <span id="clock">12:00 PM</span>
+    </div>
+  </div>
+
+  <!-- Shutdown Overlay -->
+  <div id="shutdown-overlay">
+    <div id="shutdown-message" style="display: none;">
+      <h1 style="color: #ffaa00; font-size: 24px;">It's now safe to turn off your computer.</h1>
+    </div>
+  </div>
+
+  <script>
+    // Start Menu toggle
+    function toggleStartMenu() {
+      const startMenu = document.getElementById('start-menu');
+      const startButton = document.getElementById('start-button');
+      if (startMenu.style.display === 'block') {
+        startMenu.style.display = 'none';
+        startButton.classList.remove('active');
+      } else {
+        startMenu.style.display = 'block';
+        startButton.classList.add('active');
+      }
+    }
+
+    // Close start menu when clicking outside
+    document.addEventListener('click', function (event) {
+      const startMenu = document.getElementById('start-menu');
+      const startButton = document.getElementById('start-button');
+      if (startMenu && startButton && !startMenu.contains(event.target) && !startButton.contains(event.target)) {
+        startMenu.style.display = 'none';
+        startButton.classList.remove('active');
+      }
+    });
+
+    // Update Clock
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour "0" should be "12"
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      const strTime = hours + ':' + minutes + ' ' + ampm;
+      document.getElementById('clock').textContent = strTime;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Shutdown sequence
+    function shutdown() {
+      const overlay = document.getElementById('shutdown-overlay');
+      const message = document.getElementById('shutdown-message');
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        message.style.display = 'block';
+      }, 2000);
+    }
+
+    // Close a window.
+    function closeWindow(button) {
+      const windowDiv = button.closest('.window');
+      if (windowDiv) {
+        setTimeout(() => {
+          windowDiv.style.display = 'none';
+        }, 98); //(noice)
+      }
+    }
+
+    // Open a window
+    function openWindow(windowId) {
+      const windowDiv = document.getElementById(windowId);
+      if (windowDiv) {
+        windowDiv.style.display = 'block';
+        windowDiv.style.zIndex = highestZIndex++;
+
+        // Center window if it's the first time opening or if it's a specific window
+        if (windowId === 'duck-window' || windowId === 'folder-window') {
+          // Simple centering logic
+          if (!windowDiv.style.top || windowDiv.style.top === '25vh') {
+            windowDiv.style.top = '100px';
+            windowDiv.style.left = '150px';
+          }
+        }
+      }
+    }
+
+    // Creature acknowledgement
+    function acknowledgement() {
+      document.getElementById('acknol').removeAttribute("disabled");
+    }
+
+    // Random number generator
+    const numberElement = document.getElementById('number');
+    function generateRandomNumber() {
+      if (!numberElement) return;
+      const randomNumber = Math.floor(Math.random() * 100) + 1;
+      numberElement.textContent = "CPU Process: " + randomNumber + "%";
+    }
+
+    generateRandomNumber();
+    setInterval(generateRandomNumber, 2000)
+
+    // Draggable Div
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      const header = elmnt.querySelector('.title-bar');
+      if (header) {
+        header.onmousedown = dragMouseDown;
+      } else {
+        return;
+      }
+
+      function dragMouseDown(e) {
+        e = e || window.event;
+        if (e.target.tagName === 'BUTTON') {
+          return;
+        }
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+
+        // Bring to front on drag
+        elmnt.style.zIndex = highestZIndex++;
+      }
+
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+    // Tab stuff.
+    function openTab(event, tabId) {
+      const tabcontent = document.querySelectorAll('[role="tabpanel"]');
+      for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      const tablinks = document.querySelectorAll('[role="tab"]');
+      for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].setAttribute('aria-selected', 'false');
+      }
+      document.getElementById(tabId).style.display = "block";
+      event.target.parentElement.setAttribute('aria-selected', 'true');
+    }
+
+    const tablist = document.querySelector('[role="tablist"]');
+    if (tablist) {
+      tablist.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A') {
+          e.preventDefault();
+          const tabId = e.target.getAttribute('href').substring(1);
+          openTab(e, tabId);
+        }
+      });
+      const activeTab = document.querySelector('[role="tab"][aria-selected="true"] a');
+      if (activeTab) activeTab.click();
+    }
+
+    // Window focus and initialization
+    let highestZIndex = 10;
+    document.querySelectorAll('.window').forEach(win => {
+      dragElement(win);
+
+      win.addEventListener('mousedown', () => {
+        win.style.zIndex = highestZIndex++;
+      });
+    });
+  </script>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SENTENTIA</title>
+  <link rel="preload" href="LOCAL_SYSRES/FONTS/stat_ft.ttf" as="font" type="font/ttf" crossorigin>
+  <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+</head>
+
+<body class="home-page">
+  <!--First edit 02/07/2025 11:42 <3. AND THEN I PROCASTINATED AND NOW IT'S--->
+  <!--ACTUALLY IN DEVELOPMENT IN 21/12/2025-->
+  <script>
+    // Background parallax
+    let lastCall = 0;
+    document.addEventListener('mousemove', function (e) {
+      const now = Date.now();
+      if (now - lastCall < 16) return;
+      lastCall = now;
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      const posX = 20 + x * 50;
+      const posY = 20 + y * 50;
+      document.body.style.backgroundPosition = `${posX}% ${posY}%`;
+    });
+  </script>
+  <div class="glow">SOON.</div>
+</body>
+
+</html>
