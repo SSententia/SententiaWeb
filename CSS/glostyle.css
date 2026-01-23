@@ -1,0 +1,16 @@
+/* global styles */
+/* (Friendly reminder: make it mobile compatible) */
+
+body {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  font-family: Verdana;
+}
+
+.roboto-mono {
+  font-family: "Roboto Mono", monospace;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  color: #333
+}
