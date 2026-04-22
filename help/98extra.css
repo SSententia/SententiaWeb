@@ -1,0 +1,536 @@
+#desktop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 28px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 80px);
+    grid-template-rows: repeat(auto-fill, 80px);
+    grid-auto-flow: column;
+    gap: 20px;
+    z-index: 0;
+}
+
+.desktop-icon {
+    width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    text-align: center;
+}
+
+.desktop-icon img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+}
+
+.desktop-icon span {
+    color: white;
+    font-size: 11px;
+    text-shadow: 1px 1px 1px black;
+    padding: 2px;
+}
+
+.desktop-icon:hover span {
+    background-color: #000080;
+    color: white !important;
+}
+
+.desktop-icon.selected span {
+    background-color: #000080;
+    color: white !important;
+    text-shadow: none;
+}
+
+#folder-icon:hover span {
+    color: white;
+}
+
+#taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 28px;
+    background: silver;
+    box-shadow: inset 1px 1px #dfdfdf, 1px 0 #000, 0 1px #000, 1px 1px #000;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    z-index: 1000;
+}
+
+#start-button {
+    height: 22px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+#start-button.active {
+    box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+    padding: 1px 5px 0 7px;
+}
+
+#start-button img {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+#taskbar-tray {
+    margin-left: auto;
+    height: 22px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    box-shadow: inset -1px -1px #ffffff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+    background: silver;
+    font-size: 11px;
+    position: relative;
+}
+
+#taskbar-tray img {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    cursor: pointer;
+}
+
+#volume-popup {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+    width: 60px;
+    height: auto;
+    background: silver;
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 5px;
+    z-index: 1002;
+}
+
+#volume-popup .is-vertical {
+    display: flex;
+    justify-content: space-evenly;
+    /* works somehow */
+    width: 20px;
+    height: 80px;
+    margin: 10px 0;
+}
+
+#volume-popup input[type="range"] {
+    width: 80px;
+}
+
+#volume-popup span {
+    font-size: 10px;
+}
+
+#start-menu {
+    position: fixed;
+    bottom: 28px;
+    left: 2px;
+    width: 200px;
+    background: silver;
+    box-shadow: 2px 2px 0 #000;
+    display: none;
+    z-index: 1001;
+    padding: 2px;
+}
+
+.start-menu-sidebar {
+    width: 25px;
+    background: linear-gradient(to left, #000080 0%, #0846AA 100%);
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 10px;
+}
+
+.start-menu-sidebar span {
+    color: white;
+    font-weight: bold;
+    transform: rotate(-90deg);
+    transform-origin: left bottom;
+    white-space: nowrap;
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+.start-menu-content {
+    margin-left: 28px;
+}
+
+.start-menu-item {
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.start-menu-item:hover {
+    background-color: #000080;
+    color: white;
+}
+
+.start-menu-item img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+#start-menu-item-small {
+    width: 32px;
+    height: 32px;
+    margin-left: -5px;
+    margin-right: 7px
+}
+
+.start-menu-divider {
+    height: 1px;
+    background: #808080;
+    border-bottom: 1px solid #ffffff;
+    margin: 2px 0;
+}
+
+#shutdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #ffaa00;
+    font-family: "Courier New", Courier, monospace;
+    text-align: center;
+}
+
+#shutdown-overlay img {
+    max-width: 80%;
+    margin-bottom: 20px;
+}
+
+.title-bar-text img {
+    width: 12px;
+    height: 12px;
+    margin-right: 3px;
+}
+
+h1 {
+    font-size: 1.25rem;
+}
+
+#about-window-body {
+    background: linear-gradient(to top, #000080, #1084d0);
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#about-window-body span {
+    color: white;
+    text-shadow: none;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.notepad-textarea {
+    width: 100%;
+    height: 200px;
+    resize: none;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    border: none;
+    outline: none;
+}
+
+.trash-content {
+    height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 5px;
+}
+
+.trash-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 5px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.trash-file:hover {
+    background-color: #000080;
+    color: white;
+}
+
+.trash-file img {
+    width: 16px;
+    height: 16px;
+}
+
+.media-container {
+    background: black;
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.media-container img,
+.media-container video {
+    max-width: 100%;
+    max-height: 200px;
+}
+
+.media-controls {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.media-url-input {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.browser-toolbar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.browser-address {
+    flex: 1;
+}
+
+.browser-iframe {
+    width: 100%;
+    height: 300px;
+    border: 2px inset;
+    background: white;
+}
+
+/* virus effects */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-10px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes glitch {
+    0% {
+        clip-path: inset(40% 0 61% 0);
+        transform: skew(0.5deg);
+    }
+
+    20% {
+        clip-path: inset(92% 0 1% 0);
+        transform: skew(-0.5deg);
+    }
+
+    40% {
+        clip-path: inset(43% 0 1% 0);
+        transform: skew(0.5deg);
+    }
+
+    60% {
+        clip-path: inset(25% 0 58% 0);
+        transform: skew(-0.5deg);
+    }
+
+    80% {
+        clip-path: inset(54% 0 7% 0);
+        transform: skew(0.5deg);
+    }
+
+    100% {
+        clip-path: inset(58% 0 43% 0);
+        transform: skew(-0.5deg);
+    }
+}
+
+.shake-effect {
+    animation: shake 0.5s ease-in-out;
+}
+
+.invert-effect {
+    filter: invert(1);
+}
+
+#bsod-overlay {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background: #0000aa;
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: "Courier New", monospace;
+    padding: 50px;
+    text-align: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#bsod-overlay .bsod-title {
+    background: #aaaaaa;
+    color: #0000aa;
+    padding: 2px 10px;
+    margin-bottom: 20px;
+}
+
+/* mobile adjustments */
+@media (max-width: 600px) {
+    #desktop {
+        grid-template-columns: repeat(auto-fill, 70px);
+        gap: 10px;
+    }
+
+    .desktop-icon {
+        width: 60px;
+    }
+}
+
+/* New Virus Effects */
+@keyframes barrel-roll {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes hue-spin {
+    from {
+        filter: hue-rotate(0deg);
+    }
+
+    to {
+        filter: hue-rotate(360deg);
+    }
+}
+
+.barrel-roll {
+    animation: barrel-roll 2s linear infinite;
+}
+
+.hue-spin {
+    animation: hue-spin 1s linear infinite;
+}
+
+.css-less * {
+    all: initial !important;
+    font-family: serif !important;
+    /* Keep text readable-ish */
+    display: block !important;
+}
+
+/* Exclude System Alert from CSS-less if possible, but difficult with * selector.
+    We will target #desktop-wrapper for this class to avoid breaking the alert dialog. */
+
+.color-downgrade {
+    filter: contrast(150%) brightness(0.8) grayscale(0.5);
+    /* Approximation of 4-bit/limited palette feeling */
+}
+
+.blurry {
+    filter: blur(4px);
+}
+
+.monochrome {
+    filter: grayscale(100%) contrast(200%);
+}
+
+@font-face {
+    font-family: 'Wingdings';
+    src: local('Wingdings'), local('Webdings');
+    /* Fallback to standard symbols if local font not present - unlikely to work perfectly x-browser without file, 
+        so we'll use a generic cursive or fantasy for "unrecognizable" or just random transforms */
+}
+
+.unrecognizable {
+    font-family: 'Wingdings', 'Webdings', 'Symbol', cursive !important;
+    letter-spacing: -2px;
+}
+
+#ransomware-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    color: red;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 15000;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+#rickroll-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 15000;
+    display: none;
+    background: black;
+}
+
+#settings-button {
+    display: block;
+    margin-top: 8px;
+    width: 100%;
+}

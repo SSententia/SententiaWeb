@@ -4,69 +4,140 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SENTENTIA</title>
-  <link rel="preload" href="LOCAL/FONTS/stat_ft.ttf" as="font" type="font/ttf" crossorigin>
+  <title>Frontpage WIP</title>
+  <meta name="description" content="The frontpage is still under construction. Stay tuned!">
+  <link rel="icon" type="image/x-icon" href="LOCAL/MEDIA/Notfound.ico">
   <link rel="stylesheet" href="CSS/glostyle.css" type="text/css" media="all">
+  <link rel="prefetch" href="/EXTERNAL/MEDIA/APRILFOOLS/gullible!.webm">
+  <!-- !external media. replace with link later-->
+  <link rel="prefetch" href="/navigation">
   <style>
-    .home-page {
-      background-image: url(https://file.garden/aGaA2pIcQiyAwVuB/SYSTEM_RESOURCES/IMAGES/STARS.webp);
-      background-size: 200%;
-      background-repeat: repeat;
-      background-position: center;
-      transition: background-position 0.1s;
-      overflow: hidden
-    }
-
-    .glow {
-      font-size: 80px;
-      color: #53ff78;
-      text-align: center;
-      animation: glow 1s ease-in-out infinite alternate-reverse;
-      height: auto;
-      width: auto;
+    body {
+      background-color: #ADADAD;
+      min-height: 100dvh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: stat_ft;
+      justify-content: center;
     }
 
-    @keyframes glow {
-      from {
-        text-shadow: 0 0 10px #53ff78, 0 0 20px #53ff78, 0 0 30px #28ae65, 0 0 40px #28ae65, 0 0 50px #28ae65, 0 0 60px #28ae65, 0 0 70px #28ae65;
+    .logo {
+      max-width: 100px;
+      width: 100%;
+      transition: max-width 0.3s ease-in-out;
+      margin-inline: auto;
+    }
+
+    .logo:hover {
+      max-width: 110px;
+      width: 100%;
+      transition: max-width 0.3s ease-in-out;
+    }
+
+    .container {
+      margin-inline: 25vw;
+      padding-block: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin-inline: 5vw;
       }
 
-      to {
-        text-shadow: 0 0 20px #53ff78, 0 0 30px #6fca83, 0 0 40px #6fca83, 0 0 50px #6fca83, 0 0 60px #6fca83, 0 0 70px #6fca83, 0 0 80px #6fca83;
+      .box p {
+        width: 90% !important;
       }
     }
 
-    @font-face {
-      font-family: stat_ft;
-      src: url(LOCAL/FONTS/stat_ft.ttf);
+    .box {
+      border-radius: 25px;
+      background-color: #D2D2D2;
+      display: grid;
+      place-content: center;
+      padding: 25px;
+      box-shadow: 10px 10px 5px #838383
+    }
+
+    .construct-image {
+      display: grid;
+      place-content: center;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      top: 3px;
+    }
+
+    .construct-image img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0% {
+        transform: scale3d(1, 1, 1);
+      }
+
+      30% {
+        transform: scale3d(1.25, 0.75, 1);
+      }
+
+      40% {
+        transform: scale3d(0.75, 1.25, 1);
+      }
+
+      50% {
+        transform: scale3d(1.15, 0.75, 1);
+      }
+
+      65% {
+        transform: scale3d(0.95, 1.05, 1);
+      }
+
+      75% {
+        transform: scale3d(1.05, 0.95, 1);
+      }
+
+      100% {
+        transform: scale3d(1, 1, 1);
+      }
     }
   </style>
 </head>
 
-<body class="home-page">
-  <!--First edit 02/07/2025 11:42 <3. AND THEN I PROCASTINATED AND NOW IT'S--->
-  <!--ACTUALLY IN DEVELOPMENT IN 21/12/2025-->
+<body>
+  <div class="container">
+    <div class="construct-image">
+      <img src="LOCAL/MEDIA/INDEX/barraconstruction.gif">
+    </div>
+    <div class="box">
+      <img src="LOCAL/MEDIA/INDEX/s.webp" class="logo" id="logo">
+      <h1 class="ariw95" style="text-align: center;">Heads up!</h1>
+      <p class="ariw95" style="text-align: center; width: 60%; margin-inline: auto;">The website you're trying to visit
+        is currently under HEAVY construction. </p>
+      <p class="ariw95" style="text-align: center; width: 60%; margin-inline: auto;">Homepage is still a work in
+        progress. In the meantime, you can visit
+        other pages i've already made <a href="/navigation">here</a></p>
+    </div>
+    <div class="construct-image" style="margin-bottom:10px;">
+      <img src="LOCAL/MEDIA/INDEX/barraconstruction.gif">
+    </div>
+  </div>
+
   <script>
-    // background parallax
-    let lastCall = 0;
-    document.addEventListener('mousemove', function (e) {
-      const now = Date.now();
-      if (now - lastCall < 16) return;
-      lastCall = now;
-      const x = e.clientX / window.innerWidth;
-      const y = e.clientY / window.innerHeight;
-      const posX = 20 + x * 50;
-      const posY = 20 + y * 50;
-      document.body.style.backgroundPosition = `${posX}% ${posY}%`;
+    const logo = document.getElementById('logo');
+    logo.addEventListener('click', () => {
+      logo.classList.add('shake');
+      logo.addEventListener('animationend', () => {
+        logo.classList.remove('shake');
+      }, { once: true });
     });
   </script>
-  <div class="glow">SOON.</div>
 </body>
 
 </html>
