@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search — Wonder!</title>
     <meta name="description" content="Search results for Wonder pages">
-    <link rel="icon" type="image/x-icon" href="/LOCAL/MEDIA/Notfound.ico">
-    <link rel="stylesheet" href="/CSS/glostyle.css" type="text/css" media="all">
+    <link rel="icon" type="image/x-icon" href="../../LOCAL/MEDIA/Notfound.ico">
+    <link rel="stylesheet" href="../../CSS/glostyle.css" type="text/css" media="all">
     <link rel="preload" href="../MEDIA/wonder.svg" as="image" />
     <link rel="preload" href="../MEDIA/wonder_white.svg" as="image" />
     <style>
@@ -308,7 +308,7 @@
 
 <body>
     <div class="search-header">
-        <img class="search-header-logo" alt="Wonder" onclick="window.location.href='/wonder/'" />
+        <img class="search-header-logo" alt="Wonder" onclick="window.location.href='../'" />
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Wonder about..." />
             <button type="button" id="searchBtn">Search</button>
@@ -368,7 +368,7 @@
         function doSearch() {
             const q = searchInput.value.trim();
             if (q) {
-                window.location.href = '/wonder/search/?q=' + encodeURIComponent(q);
+                window.location.href = '?q=' + encodeURIComponent(q);
             }
         }
         searchBtn.addEventListener('click', doSearch);
@@ -390,7 +390,7 @@
 
         let allPages = [];
 
-        fetch('/wonder/search-index.json')
+        fetch('../search-index.json')
             .then(res => res.json())
             .then(pages => {
                 allPages = pages;

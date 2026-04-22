@@ -5,10 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wonder!</title>
-  <link rel="icon" type="image/x-icon" href="/LOCAL/MEDIA/Notfound.ico">
+  <link rel="icon" type="image/x-icon" href="../LOCAL/MEDIA/Notfound.ico">
   <link rel="preload" href="MEDIA/wonder.svg" as="image" />
   <link rel="preload" href="MEDIA/wonder_white.svg" as="image" />
-  <link rel="stylesheet" href="/CSS/glostyle.css" type="text/css" media="all">
+  <link rel="stylesheet" href="../CSS/glostyle.css" type="text/css" media="all">
   <style>
     :root {
       --logo: url('MEDIA/wonder.svg');
@@ -208,10 +208,10 @@
       <button class="get-all" id="getAllBtn">Get me everything</button>
     </div>
     <p class="secondary-text">Recently added:
-      <a href="/wonder/42">42</a>,
-      <a href="/wonder/abysmal">abysmal</a>,
-      <a href="/wonder/sententia">sententia</a>,
-      <a href="/wonder/þ">þ (thorn symbol)</a>.
+      <a href="42/">42</a>,
+      <a href="abysmal/">abysmal</a>,
+      <a href="sententia/">sententia</a>,
+      <a href="þ/">þ (thorn symbol)</a>.
     </p>
     <div class="information" id="About">
       <div>
@@ -221,7 +221,7 @@
       </div>
       <p>A google imitation where you can find pages dedicated to one topic.</p>
       <p>Why is a page dedicated to one topic? Well, maybe I just want to share my thoughts on that specific
-        topic. Have you ever wondered why <a href="/wonder/42">42</a> became my favorite
+        topic. Have you ever wondered why <a href="42/">42</a> became my favorite
         number?
       </p>
       <p>Don't expect good quality. I'm not gonna dedicate my time to making the pages look good, especially the fact
@@ -324,7 +324,7 @@
 
     // cache the search index for the lucky button
     let cachedPages = null;
-    fetch('/wonder/search-index.json')
+    fetch('search-index.json')
       .then(res => res.json())
       .then(pages => { cachedPages = pages; })
       .catch(() => { });
@@ -333,7 +333,7 @@
     function doSearch() {
       const q = searchInput.value.trim();
       if (q) {
-        window.location.href = '/wonder/search/?q=' + encodeURIComponent(q);
+        window.location.href = 'search/?q=' + encodeURIComponent(q);
       }
     }
     searchBtn.addEventListener('click', doSearch);
@@ -439,7 +439,7 @@
 
     // show all pages for "get me everything"
     getAllBtn.addEventListener('click', () => {
-      window.location.href = '/wonder/search/?q=*';
+      window.location.href = 'search/?q=*';
     });
   </script>
 </body>
