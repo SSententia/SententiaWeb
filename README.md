@@ -3,7 +3,7 @@ Source code of my personal website <sup><sub>$\color{CadetBlue}{(duh)}$</sub></s
 
 Here's my [neocities website!](https://sententia.neocities.org/)
 
-# Have an issue connecting to Neocities?
+# Having trouble connecting to Neocities?
 Neocities may be banned in your country. To get past their censorship freak policies, you may have to change your usual ISP DNS to known international DNS providers like Cloudflare (1.1.1.1) or Google (8.8.8.8). Works in Indonesia. I'm not sure if this works elsewhere
 
 # License
