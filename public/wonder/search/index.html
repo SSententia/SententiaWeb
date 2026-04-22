@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search — Wonder!</title>
+    <meta name="description" content="Search results for Wonder pages">
+    <link rel="icon" type="image/x-icon" href="../../LOCAL/MEDIA/Notfound.ico">
+    <link rel="stylesheet" href="../../CSS/glostyle.css" type="text/css" media="all">
+    <link rel="preload" href="../MEDIA/wonder.svg" as="image" />
+    <link rel="preload" href="../MEDIA/wonder_white.svg" as="image" />
+    <style>
+        :root {
+            --logo: url('../MEDIA/wonder.svg');
+            --bg-color: white;
+            --text-color: #1a1a1a;
+            --secondary-text-color: #6c6c6c;
+            --link-color: #102A43;
+            --link-hover: #57697B;
+            --url-color: #006621;
+            --footer-color: #333;
+            --input-color: #f0f0f0;
+            --input-border: #a6a6a6;
+            --card-bg: #f8f8f8;
+            --card-border: #e0e0e0;
+            --divider-color: #dadce0;
+            --snippet-color: #4d5156;
+        }
+
+        [data-theme="dark"] {
+            --logo: url('../MEDIA/wonder_white.svg');
+            --bg-color: #333;
+            --text-color: white;
+            --secondary-text-color: #898989;
+            --link-color: #829AB1;
+            --link-hover: #a7b8c8;
+            --url-color: #70c070;
+            --footer-color: #282828;
+            --input-color: #d2d2d2;
+            --input-border: #222222;
+            --card-bg: #3d3d3d;
+            --card-border: #555;
+            --divider-color: #555;
+            --snippet-color: #b0b0b0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--link-hover);
+            text-decoration: underline;
+        }
+
+        .search-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--divider-color);
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-header-logo {
+            height: 36px;
+            width: auto;
+            content: var(--logo);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 600px;
+            min-width: 200px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 8px 14px;
+            font-size: 14px;
+            border: 2px inset var(--input-border);
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            background-color: var(--input-color);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--link-color);
+        }
+
+        .search-bar button {
+            padding: 8px 18px;
+            font-size: 14px;
+            border: 2px outset var(--input-border);
+            border-radius: 0 4px 4px 0;
+            background-color: var(--input-color);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            opacity: 0.8;
+        }
+
+        .header-controls {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-color);
+            background: none;
+            border: none;
+            padding: 6px 10px;
+        }
+
+        .results-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px 30px 80px 30px;
+        }
+
+        .results-stats {
+            font-size: 13px;
+            color: var(--secondary-text-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .result-item {
+            margin-bottom: 28px;
+        }
+
+        .result-url {
+            font-size: 12px;
+            color: var(--url-color);
+            margin-bottom: 2px;
+            word-break: break-all;
+        }
+
+        .result-title {
+            margin: 0 0 4px 0;
+        }
+
+        .result-title a {
+            font-size: 18px;
+            font-weight: normal;
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .result-title a:hover {
+            text-decoration: underline;
+        }
+
+        .result-snippet {
+            font-size: 13px;
+            color: var(--snippet-color);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .no-results {
+            margin-top: 30px;
+        }
+
+        .no-results h2 {
+            font-size: 18px;
+            font-weight: normal;
+            margin-bottom: 12px;
+        }
+
+        .no-results ul {
+            font-size: 14px;
+            color: var(--secondary-text-color);
+            line-height: 1.8;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--divider-color);
+            margin: 35px 0 25px 0;
+        }
+
+        .also-like-heading {
+            font-size: 16px;
+            font-weight: normal;
+            color: var(--secondary-text-color);
+            margin-bottom: 16px;
+        }
+
+        .also-like-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .also-like-card {
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 16px;
+            background-color: var(--card-bg);
+            transition: box-shadow 0.2s ease, transform 0.15s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .also-like-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .also-like-card-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--link-color);
+            margin: 0 0 6px 0;
+        }
+
+        .also-like-card-snippet {
+            font-size: 12px;
+            color: var(--snippet-color);
+            line-height: 1.4;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        #footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: var(--footer-color);
+            color: white;
+            padding: clamp(4px, 1vh, 14px) 0;
+        }
+
+        #footer .secondary-text {
+            color: white;
+            margin: 0;
+            font-size: clamp(8.5px, 1.25vw, 11px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--secondary-text-color);
+            font-size: 14px;
+        }
+
+        /* throbber. heh. */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--divider-color);
+            border-top-color: var(--link-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .all-results-heading {
+            font-size: 16px;
+            font-weight: normal;
+            color: var(--secondary-text-color);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="search-header">
+        <img class="search-header-logo" alt="Wonder" onclick="window.location.href='../'" />
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Wonder about..." />
+            <button type="button" id="searchBtn">Search</button>
+        </div>
+        <div class="header-controls">
+            <button class="theme-toggle" id="modeToggle">Flip theme</button>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="results-container" id="resultsContainer">
+        <div class="loading" id="loadingIndicator">
+            <span class="spinner"></span> Loading search index…
+        </div>
+    </div>
+
+    <div id="footer">
+        <p class="secondary-text">
+            Not owned by a real company. Painfully made by SSententia!/pankaekz. Powered by <a
+                href="https://lunrjs.com/" style="color: inherit;">
+                <strong>lunr.js</strong></a>.
+        </p>
+    </div>
+
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
+    <script>
+        /**
+         * Comment:
+         *  Pretty complex for someone who's just a hobbyist, eh?
+         *  I died several time while making all of this.
+         *  I should've probably work on something easier first
+         *  Atleast I'm proud of my work (and bugs)
+         */
+
+        // theme
+        const toggle = document.getElementById('modeToggle');
+        toggle.addEventListener('click', () => {
+            const isDark = document.body.hasAttribute('data-theme');
+            if (isDark) {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+
+        // submission
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+
+        function doSearch() {
+            const q = searchInput.value.trim();
+            if (q) {
+                window.location.href = '?q=' + encodeURIComponent(q);
+            }
+        }
+        searchBtn.addEventListener('click', doSearch);
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        // read query from url
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('q') || '';
+        searchInput.value = query;
+        if (query) {
+            document.title = `${query} — Wonder! Search`;
+        }
+
+        // logic stuff
+        const container = document.getElementById('resultsContainer');
+        const loadingEl = document.getElementById('loadingIndicator');
+
+        let allPages = [];
+
+        fetch('../search-index.json')
+            .then(res => res.json())
+            .then(pages => {
+                allPages = pages;
+                loadingEl.remove();
+
+                if (!query) {
+                    container.innerHTML = '<p class="results-stats">hiii :3 start searching to find pages!!!</p>';
+                    return;
+                }
+
+                // build index
+                const idx = lunr(function () {
+                    this.ref('id');
+                    this.field('title', { boost: 10 });
+                    this.field('body');
+                    pages.forEach(doc => this.add(doc));
+                });
+
+                // create a lookup map
+                const pageMap = {};
+                pages.forEach(p => pageMap[p.id] = p);
+
+                let results = [];
+                let isShowAll = (query === '*');
+
+                if (isShowAll) {
+                    results = pages.map(p => ({ ref: p.id, score: 1 }));
+                } else {
+                    try {
+                        results = idx.search(query);
+                    } catch (e) {
+                        // for when lunr throws a bad syntax tantrum
+                        try {
+                            results = idx.search(query.replace(/[^a-zA-Z0-9\s]/g, ''));
+                        } catch (e2) {
+                            results = [];
+                        }
+                    }
+                }
+
+                // render stuff
+                let html = '';
+
+                if (isShowAll) {
+                    html += `<p class="all-results-heading">Showing all <strong>${pages.length}</strong> available pages</p>`;
+                } else {
+                    html += `<p class="results-stats">About ${results.length} result${results.length !== 1 ? 's' : ''} for "<strong>${escapeHtml(query)}</strong>"</p>`;
+                }
+
+                if (results.length === 0) {
+                    html += `
+            <div class="no-results">
+              <h2>No results found for "<strong>${escapeHtml(query)}</strong>"</h2>
+              <p>Suggestions:</p>
+              <ul>
+                <li>Make sure all words are spelled correctly</li>
+                <li>Try different or more general keywords</li>
+                <li>Try using wildcards, e.g. <code>hardw*</code></li>
+                <li>Try fuzzy matching, e.g. <code>clone~1</code></li>
+              </ul>
+            </div>`;
+                } else {
+                    // render result
+                    results.forEach(r => {
+                        const page = pageMap[r.ref];
+                        if (!page) return;
+                        const snippet = page.body.length > 220
+                            ? page.body.substring(0, 220) + '…'
+                            : page.body;
+                        html += `
+              <div class="result-item">
+                <div class="result-url">sententia.neocities.org${page.url}</div>
+                <h3 class="result-title"><a href="${page.url}">${escapeHtml(page.title)}</a></h3>
+                <p class="result-snippet">${escapeHtml(snippet)}</p>
+              </div>`;
+                    });
+                }
+
+                // "you may also like"
+                const resultIds = new Set(results.map(r => r.ref));
+                const candidates = pages.filter(p => !resultIds.has(p.id));
+                let alsoLike = [];
+
+                if (candidates.length >= 3) {
+                    alsoLike = shuffleArray(candidates).slice(0, 3);
+                } else if (candidates.length > 0) {
+                    alsoLike = shuffleArray(candidates).slice(0, Math.min(3, candidates.length));
+                } else if (pages.length > 3) {
+                    // pick 3 random from all if all pages are in results
+                    alsoLike = shuffleArray([...pages]).slice(0, 3);
+                }
+
+                if (alsoLike.length > 0) {
+                    html += '<hr class="section-divider">';
+                    html += '<p class="also-like-heading">You may also like</p>';
+                    html += '<div class="also-like-grid">';
+                    alsoLike.forEach(page => {
+                        const snippet = page.body.length > 100
+                            ? page.body.substring(0, 100) + '…'
+                            : page.body;
+                        html += `
+              <a class="also-like-card" href="${page.url}">
+                <p class="also-like-card-title">${escapeHtml(page.title)}</p>
+                <p class="also-like-card-snippet">${escapeHtml(snippet)}</p>
+              </a>`;
+                    });
+                    html += '</div>';
+                }
+
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                loadingEl.remove();
+                container.innerHTML = `<p class="results-stats" style="color: red;">Error loading search index. Oopsies.</p>`;
+                console.error('Search index error:', err);
+            });
+
+        // uhh stuff
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+    </script>
+</body>
+
+</html>

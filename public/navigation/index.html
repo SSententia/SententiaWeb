@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A list of pages...</title>
+  <style>
+    :root {
+      --crt-red: rgb(218, 49, 49);
+      --crt-green: rgb(112, 159, 115);
+      --crt-blue: rgb(40, 129, 206);
+      --bg: rgb(20, 20, 25);
+      --fg: rgba(255, 255, 255, 0.82);
+
+      /* syntax colors */
+      --col-keyword: #f07178;
+      --col-import: #89ddff;
+      --col-string: #c3e88d;
+      --col-punct: #89ddff;
+      --col-comment: #546e7a;
+      --col-error: #ff5370;
+      --col-muted: rgba(255, 255, 255, 0.45);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    *::-webkit-scrollbar {
+      display: none;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--bg);
+      font: clamp(0.85rem, 2vw, 1.35rem)/1.7 "Courier New", Courier, monospace;
+      color: var(--fg);
+      overflow-y: auto;
+    }
+
+    .crt {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      /* glow */
+      text-shadow:
+        0 0 0.18em currentColor,
+        1px 1px 0 rgba(255, 0, 255, 0.35),
+        -1px -1px 0 rgba(0, 255, 255, 0.30);
+    }
+
+    /* scanlines */
+    .crt::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom,
+          transparent 0px,
+          transparent 2px,
+          rgba(0, 0, 0, 0.18) 2px,
+          rgba(0, 0, 0, 0.18) 4px);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* rgb shimmer */
+    .crt::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(90deg,
+          rgba(218, 49, 49, 0.04) 0px,
+          rgba(112, 159, 115, 0.04) 1px,
+          rgba(40, 129, 206, 0.04) 2px,
+          transparent 3px);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 2;
+      animation: rgbShift 8s ease-in-out infinite alternate;
+    }
+
+    /* flicker */
+    @keyframes rgbShift {
+      0% {
+        opacity: 0.6;
+      }
+
+      40% {
+        opacity: 1;
+      }
+
+      60% {
+        opacity: 0.85;
+      }
+
+      80% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0.7;
+      }
+    }
+
+    .vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center,
+          transparent 55%,
+          rgba(0, 0, 0, 0.65) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .terminal {
+      position: relative;
+      z-index: 4;
+      padding: clamp(1rem, 3vw, 2rem) clamp(0.75rem, 2.5vw, 1.5rem);
+    }
+
+    .line {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0;
+      line-height: 1.65;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.55ch;
+      height: 1.1em;
+      background: var(--fg);
+      vertical-align: text-bottom;
+      opacity: 0;
+    }
+
+    .cursor.active {
+      animation: blink 600ms step-start infinite;
+      opacity: 1;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .kw {
+      color: var(--col-keyword);
+    }
+
+    .imp {
+      color: var(--col-import);
+    }
+
+    .str {
+      color: var(--col-string);
+    }
+
+    .pun {
+      color: var(--col-punct);
+    }
+
+    .cmt {
+      color: var(--col-comment);
+    }
+
+    .err {
+      color: var(--col-error);
+    }
+
+    .muted {
+      color: var(--col-muted);
+    }
+
+    .mt {
+      margin-top: 0.5rem;
+    }
+
+    .line video {
+      max-width: min(640px, 80vw);
+      height: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="crt">
+    <div class="vignette"></div>
+
+    <div class="terminal">
+
+      <span class="line" data-extra-delay="0">
+        <span>window.</span><span class="imp">open(</span><span class="str">'/navigation/sitemap/'</span><span
+          class="imp">)</span>
+      </span>
+
+      <span class="line mt" data-blank>&nbsp;</span>
+
+      <span class="line">
+        <span class="cmt">Redirecting you to the sitemap...</span>
+      </span>
+
+      <span class="line" data-extra-delay="1618">
+        <span class="err">Denied</span><span class="pun">:</span> Has_read_tutorial is <span class="kw">false</span>
+      </span>
+
+      <span class="line">
+        <span class="muted">HTTP</span> <span class="err">403 Forbidden</span>
+      </span>
+
+      <span class="line mt" data-blank>&nbsp;</span>
+
+      <span class="line" data-extra-delay="1000">
+        <span class="cmt">...</span>
+      </span>
+
+      <span class="line">
+        <span class="cmt">It appears that you have not yet</span>
+      </span>
+
+      <span class="line">
+        <span class="cmt">viewed the video tutorial.</span>
+      </span>
+
+      <span class="line mt" data-blank>&nbsp;</span>
+
+      <span class="line">
+        <span class="cmt">This is necessary to help you navigate</span>
+      </span>
+
+      <span class="line">
+        <span class="cmt">the page you're visiting.</span>
+      </span>
+
+      <span class="line mt" data-blank>&nbsp;</span>
+
+      <span class="line">
+        <span class="cmt">You can't skip it, but it won't appear</span>
+      </span>
+
+      <span class="line">
+        <span class="cmt">again once you've watched it.</span>
+      </span>
+
+      <span class="line mt" data-blank>&nbsp;</span>
+
+      <span class="line">
+        <span class="cmt">A button will appear when you finish</span>
+      </span>
+
+      <span class="line">
+        <span class="cmt">watching the video to the end.</span>
+      </span>
+
+      <span class="line">
+        <span class="cmt">
+          Loading media...
+        </span>
+      </span>
+
+      <span class="line">
+        <span>
+          = = = = = = = = = = = = = = = = = = = = = = = = =
+        </span>
+      </span>
+
+      <span class="line">
+        <span>
+          <video oncontextmenu="return false;" id="tutorial-video" controls>
+            <source src="https://cdn.jsdelivr.net/gh/SSententia/SententiaWeb/EXTERNAL/MEDIA/APRILFOOLS/gullible!.webm"
+              type="video/webm">
+            <!-- Credits to RecordGuy626 (https://gamejolt.com/@RecordGuy626) for 
+            the video. Originally featured on his work on "Google.exe 6: April Fools Edition"-->
+          </video>
+        </span>
+      </span>
+
+      <span class="line">
+        <span>
+          = = = = = = = = = = = = = = = = = = = = = = = = =
+        </span>
+      </span>
+
+      <!-- This line is revealed by JS after the video ends -->
+      <span class="line" id="last-line" data-after-video>
+        <span class="err">Happy</span> <span class="cmt">(several days late)</span> <span class="err">April fools
+          day!</span> <span class="cmt">(i'm an asshole)</span>
+        <span class="cursor" id="final-cursor"></span>
+      </span>
+
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const BASE_CHAR_MS = 42;   // ms / character
+      const LINE_GAP_MS = 350;  // line pause
+      const INITIAL_DELAY = 500; // ms before first line
+      const BLANK_DUR_MS = 50;  // blank duration
+
+      function typeDuration(chars) {
+        return Math.round(chars * BASE_CHAR_MS);
+      }
+
+      /* trim whitespace). */
+      function charCount(el) {
+        return (el.textContent || '').replace(/\s+/g, ' ').trim().length || 1;
+      }
+
+      function typeLine(el, durationMs, chars) {
+        return new Promise(resolve => {
+          el.style.width = 'max-content';
+          const targetWidth = el.offsetWidth + 'px';
+
+          el.style.width = '0px';
+
+          const anim = el.animate(
+            [{ width: '0px' }, { width: targetWidth }],
+            {
+              duration: durationMs,
+              easing: `steps(${chars}, end)`,
+              fill: 'forwards'
+            }
+          );
+          anim.onfinish = resolve;
+        });
+      }
+
+      async function runTypewriter() {
+        const lines = document.querySelectorAll('.terminal .line:not([data-after-video])');
+
+        await new Promise(r => setTimeout(r, INITIAL_DELAY));
+
+        for (const line of lines) {
+          const isBlank = line.hasAttribute('data-blank');
+          const extraDelay = parseInt(line.dataset.extraDelay || '0', 10);
+
+          if (extraDelay > 0) {
+            await new Promise(r => setTimeout(r, extraDelay));
+          }
+
+          if (isBlank) {
+            await new Promise(r => setTimeout(r, BLANK_DUR_MS));
+            line.style.width = '100%';
+          } else {
+            const chars = charCount(line);
+            const dur = typeDuration(chars);
+            await typeLine(line, dur, chars);
+          }
+
+          // only if the content > viewport height
+          if (document.documentElement.scrollHeight > window.innerHeight) {
+            line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });;
+          }
+
+          await new Promise(r => setTimeout(r, LINE_GAP_MS));
+        }
+      }
+
+      function setupLastLine() {
+        const video = document.getElementById('tutorial-video');
+        const lastLine = document.getElementById('last-line');
+        const cursor = document.getElementById('final-cursor');
+        if (!lastLine) return;
+
+        let revealed = false;
+        const FALLBACK_AFTER_TYPEWRITER_MS = 30000; // 30s after typewriter ends
+
+        async function revealLastLine() {
+          if (revealed) return;
+          revealed = true;
+
+          const chars = charCount(lastLine);
+          const dur = typeDuration(chars);
+          await typeLine(lastLine, dur, chars);
+          if (cursor) cursor.classList.add('active');
+        }
+
+        if (video) {
+          video.addEventListener('pause', () => revealLastLine());
+        }
+
+        // the fallback timeout AFTER the typewriter
+        return { revealLastLine };
+      }
+
+      (async () => {
+        await runTypewriter();
+
+        const lastLineCtrl = setupLastLine();
+
+        // the last line 30 seconds after the typewriter ends
+        if (lastLineCtrl) {
+          setTimeout(() => lastLineCtrl.revealLastLine(), 30000);
+        }
+      })();
+    })();
+  </script>
+</body>
+
+</html>

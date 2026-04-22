@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontpage WIP</title>
+  <meta name="description" content="The frontpage is still under construction. Stay tuned!">
+  <link rel="icon" type="image/x-icon" href="LOCAL/MEDIA/Notfound.ico">
+  <link rel="stylesheet" href="CSS/glostyle.css" type="text/css" media="all">
+  <link rel="prefetch"
+    href="https://cdn.jsdelivr.net/gh/SSententia/SententiaWeb/EXTERNAL/MEDIA/APRILFOOLS/gullible!.webm">
+  <link rel="prefetch" href="navigation/">
+  <style>
+    body {
+      background-color: #ADADAD;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      max-width: 100px;
+      width: 100%;
+      transition: max-width 0.3s ease-in-out;
+      margin-inline: auto;
+    }
+
+    .logo:hover {
+      max-width: 110px;
+      width: 100%;
+      transition: max-width 0.3s ease-in-out;
+    }
+
+    .container {
+      margin-inline: 25vw;
+      padding-block: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin-inline: 5vw;
+      }
+
+      .box p {
+        width: 90% !important;
+      }
+    }
+
+    .box {
+      border-radius: 25px;
+      background-color: #D2D2D2;
+      display: grid;
+      place-content: center;
+      padding: 25px;
+      box-shadow: 10px 10px 5px #838383
+    }
+
+    .construct-image {
+      display: grid;
+      place-content: center;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      top: 3px;
+    }
+
+    .construct-image img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0% {
+        transform: scale3d(1, 1, 1);
+      }
+
+      30% {
+        transform: scale3d(1.25, 0.75, 1);
+      }
+
+      40% {
+        transform: scale3d(0.75, 1.25, 1);
+      }
+
+      50% {
+        transform: scale3d(1.15, 0.75, 1);
+      }
+
+      65% {
+        transform: scale3d(0.95, 1.05, 1);
+      }
+
+      75% {
+        transform: scale3d(1.05, 0.95, 1);
+      }
+
+      100% {
+        transform: scale3d(1, 1, 1);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="construct-image">
+      <img src="LOCAL/MEDIA/INDEX/barraconstruction.gif">
+    </div>
+    <div class="box">
+      <img src="LOCAL/MEDIA/INDEX/s.webp" class="logo" id="logo">
+      <h1 class="ariw95" style="text-align: center;">Heads up!</h1>
+      <p class="ariw95" style="text-align: center; width: 60%; margin-inline: auto;">The website you're trying to visit
+        is currently under HEAVY construction. </p>
+      <p class="ariw95" style="text-align: center; width: 60%; margin-inline: auto;">Homepage is still a work in
+        progress. In the meantime, you can visit
+        other pages i've already made <a href="navigation/">here</a></p>
+    </div>
+    <div class="construct-image" style="margin-bottom:10px;">
+      <img src="LOCAL/MEDIA/INDEX/barraconstruction.gif">
+    </div>
+  </div>
+
+  <script>
+    const logo = document.getElementById('logo');
+    logo.addEventListener('click', () => {
+      logo.classList.add('shake');
+      logo.addEventListener('animationend', () => {
+        logo.classList.remove('shake');
+      }, { once: true });
+    });
+  </script>
+</body>
+
+</html>

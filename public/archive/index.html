@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Not Found</title>
+  <link rel="icon" type="image/x-icon" href="../LOCAL/MEDIA/Notfound.ico">
+  <link rel="stylesheet" href="../CSS/glostyle.css" type="text/css" media="all">
+  <link rel="preload" href="MEDIA/Ivory-Mortar-1.webp" as="image" fetchpriority="high">
+  <link rel="preload" href="MEDIA/Ivory-Mortar-2.webp" as="image" fetchpriority="high">
+  <link rel="preload" href="MEDIA/Ivory-Mortar-3.webp" as="image" fetchpriority="high">
+  <style>
+    body {
+      background-image: url('MEDIA/Ivory-Mortar-1.webp');
+      background-size: cover;
+      background-position: center;
+      background-repeat: repeat;
+      background-attachment: fixed;
+    }
+
+    .container {
+      width: 35vw;
+      margin: auto;
+      background-color: black;
+    }
+
+    .container img {
+      width: 100%;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background-color: dodgerblue;
+      padding: 10px;
+    }
+
+    .grid div {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #000000;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <img src="MEDIA/Archives.png">
+  </div>
+  <div class="grid">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+    <div>5</div>
+    <script>
+      // change background every few miliseconds
+      const backgrounds = [
+        'MEDIA/Ivory-Mortar-1.webp',
+        'MEDIA/Ivory-Mortar-2.webp',
+        'MEDIA/Ivory-Mortar-3.webp',
+        'MEDIA/Ivory-Mortar-2.webp',
+      ];
+      let currentBackground = 0;
+      setInterval(() => {
+        currentBackground = (currentBackground + 1) % backgrounds.length;
+        document.body.style.backgroundImage = `url('${backgrounds[currentBackground]}')`;
+      }, 225);
+    </script>
+</body>
+
+</html>
