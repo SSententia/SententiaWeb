@@ -14,7 +14,6 @@
   <!--[https://github.com/jdan/98.css/blob/main/LICENSE]-->
   <style>
     body {
-      background-color: #008080;
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -414,8 +413,8 @@
         <menu role="tablist">
           <li role="tab" aria-selected="true"><a href="#tab5">Personalization</a></li>
           <li role="tab"><a href="#tab6">Display</a></li>
-          <li role="tab"><a href="#tab7">3</a></li>
-          <li role="tab"><a href="#tab8">4</a></li>
+          <li role="tab"><a href="#tab7">System</a></li>
+          <li role="tab"><a href="#tab8">Accessibility</a></li>
         </menu>
         <div class="window" id="tab5" role="tabpanel" style="display: block;">
           <div class="window-body">
@@ -428,24 +427,32 @@
               </div>
             </fieldset>
             <fieldset>
+              <legend>Cursor</legend>
+              <div class="field-row">
+                <label for="cursor-url">Paste cursor URL:</label>
+                <input id="cursor-url" type="text" style="width: 150px;">
+                <button onclick="changeCursor()">Submit</button>
+              </div>
+            </fieldset>
+            <fieldset>
               <legend>Font</legend>
               <div class="field-row">
-                <input checked id="S-fradio1" type="radio" name="font-settings" value="Default">
+                <input checked id="S-fradio1" type="radio" name="font-settings" data-remove="unrecognizable">
                 <label for="S-fradio1">Default</label>
               </div>
               <div class="field-row">
-                <input id="S-fradio2" type="radio" name="font-settings" value="unrecognizable">
+                <input id="S-fradio2" type="radio" name="font-settings" data-effect="unrecognizable">
                 <label for="S-fradio2">???</label>
               </div>
             </fieldset>
             <fieldset>
               <legend>CSS</legend>
               <div class="field-row">
-                <input checked id="S-csradio1" type="radio" name="css-settings" value="RM-cssLess">
+                <input checked id="S-csradio1" type="radio" name="css-settings" data-remove="css-less">
                 <label for="S-csradio1">Use CSS</label>
               </div>
               <div class="field-row">
-                <input id="S-csradio2" type="radio" name="css-settings" value="cssLess">
+                <input id="S-csradio2" type="radio" name="css-settings" data-effect="css-less">
                 <label for="S-csradio2">CSS-less</label>
               </div>
             </fieldset>
@@ -460,19 +467,19 @@
                 <label for="S-cradio1">64-bit color (not supported)</label>
               </div>
               <div class="field-row">
-                <input checked id="S-cradio2" type="radio" name="color-settings" value="RM-colorEffects">
+                <input checked id="S-cradio2" type="radio" name="color-settings" data-remove="color-downgrade monochrome invert-effect">
                 <label for="S-cradio2">24-bit color</label>
               </div>
               <div class="field-row">
-                <input id="S-cradio3" type="radio" name="color-settings" value="colorDowngrade">
-                <label for="S-cradio3">4-bit color</label>
+                <input id="S-cradio3" type="radio" name="color-settings" data-effect="color-downgrade" data-remove="color-downgrade monochrome invert-effect">
+                <label for="S-cradio3">4-bit color-ish</label>
               </div>
               <div class="field-row">
-                <input id="S-cradio4" type="radio" name="color-settings" value="monochrome">
+                <input id="S-cradio4" type="radio" name="color-settings" data-effect="monochrome" data-remove="color-downgrade monochrome invert-effect">
                 <label for="S-cradio4">1-bit color</label>
               </div>
               <div class="field-row">
-                <input id="S-cradio5" type="radio" name="color-settings" value="invertColors">
+                <input id="S-cradio5" type="radio" name="color-settings" data-effect="invert-effect" data-remove="color-downgrade monochrome invert-effect">
                 <label for="S-cradio5">(-24)-bit color</label>
               </div>
               <button onclick="hueSpin()" id="settings-button">DO A HUE ROLL</button>
@@ -487,75 +494,102 @@
         </div>
         <div class="window" id="tab7" role="tabpanel" style="display: none;">
           <div class="window-body">
-            <p>Test3</p>
+            <fieldset>
+              <legend>Storage</legend>
+                <button onclick="Compress()" id="settings-button">Compress Main Drive</button>
+                <button disabled id="settings-button">Backup Main Drive</button>
+            </fieldset>
+            <fieldset>
+              <legend>Mouse</legend>
+              <button onclick="Blackscreen()" id="settings-button">Mouse trail</button>
+              <p>Choose your mouse device:</p>
+              <select>
+                <option>Compliant and submissive mouse</option>
+                <option>Inconvenient keyboard.</option>
+              </select>
+            </fieldset>
+            <fieldset>
+              <legend>Other Hardwares</legend>
+                <button onclick="Blackscreen()" id="settings-button">Disconnect VGA</button>
+            </fieldset>
           </div>
         </div>
         <div class="window" id="tab8" role="tabpanel" style="display: none;">
           <div class="window-body">
-            <p>Test4</p>
+            <fieldset>
+              <legend>Accessibility tools</legend>
+                <button onclick="EnableNarrator()" id="settings-button">Narrator</button>
+                <button onclick="EnableSticky()" id="settings-button">Sticky keys</button>
+                <button onclick="EnableZoom()" id="settings-button">Magnifier</button>
+                <button onclick="EnableHicon()" id="settings-button">High contrast</button>
+                <button onclick="EnableHibrig()" id="settings-button">High brightness</button>
+                <button onclick="EnableBigtxt()" id="settings-button">BIG TEXT</button>
+                <button onclick="EnableBigcur()" id="settings-button">BIG CURSOR</button>
+            </fieldset>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- start menu -->
-    <div id="start-menu">
-      <div class="start-menu-sidebar">
-        <span style="margin-left: 20px;">Poorly made Windows 98b</span>
-      </div>
-      <div class="start-menu-content">
-        <div class="start-menu-item" onclick="openWindow('about-window'); toggleStartMenu()">
-          <img src="MEDIA/pc.ico" alt="About">
-          <span>About</span>
-        </div>
-        <div class="start-menu-item" onclick="openWindow('run-window'); toggleStartMenu()">
-          <img src="MEDIA/run.ico" alt="Run" id="start-menu-item-small">
-          <span>Run...</span>
-        </div>
-        <div class="start-menu-item" onclick="openWindow('help1'); toggleStartMenu()">
-          <img src="MEDIA/help2.ico" alt="Help">
-          <span>Help Page</span>
-        </div>
-        <div class="start-menu-item" onclick="openWindow('notepad-window'); toggleStartMenu()">
-          <img src="MEDIA/notepad.ico" alt="Notepad">
-          <span>Notepad</span>
-        </div>
-        <div class="start-menu-item" onclick="openWindow('media-player-window'); toggleStartMenu()">
-          <img src="MEDIA/multimedia.ico" alt="Multimedia Viewer">
-          <span>Multimedia Viewer</span>
-        </div>
-        <div class="start-menu-divider"></div>
-        <div class="start-menu-item" onclick="shutdown()">
-          <img src="MEDIA/shutdown.ico" alt="Shutdown" id="start-menu-item-small">
-          <span>Shutdown...</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- taskbar -->
-    <div id="taskbar">
-      <button id="start-button" onclick="toggleStartMenu()">
-        <img src="MEDIA/start.ico" alt="Start">
-        <span style="margin-left: 5px;">Start</span>
-      </button>
-      <div id="taskbar-tray">
-        <img src="MEDIA/speaker.ico" alt="Volume" onclick="toggleVolumePopup()">
-        <div id="volume-popup">
-          <label for="volume-slider">Cowbell</label>
-          <div class="is-vertical">
-            <input type="range" id="volume-slider" class="has-box-indicator" min="0" max="100" value="50"
-              onchange="setGlobalVolume(this.value)">
-          </div>
-          <span id="volume-label">50%</span>
-        </div>
-        <span id="clock">12:00 PM</span>
-      </div>
-    </div>
   </div> <!-- closing desktop-wrapper -->
+
+  <!-- start menu -->
+  <div id="start-menu">
+    <div class="start-menu-sidebar">
+      <span style="margin-left: 20px;">Poorly made Windows 98b</span>
+    </div>
+    <div class="start-menu-content">
+      <div class="start-menu-item" onclick="openWindow('about-window'); toggleStartMenu()">
+        <img src="MEDIA/pc.ico" alt="About">
+        <span>About</span>
+      </div>
+      <div class="start-menu-item" onclick="openWindow('run-window'); toggleStartMenu()">
+        <img src="MEDIA/run.ico" alt="Run" id="start-menu-item-small">
+        <span>Run...</span>
+      </div>
+      <div class="start-menu-item" onclick="openWindow('help1'); toggleStartMenu()">
+        <img src="MEDIA/help2.ico" alt="Help">
+        <span>Help Page</span>
+      </div>
+      <div class="start-menu-item" onclick="openWindow('notepad-window'); toggleStartMenu()">
+        <img src="MEDIA/notepad.ico" alt="Notepad">
+        <span>Notepad</span>
+      </div>
+      <div class="start-menu-item" onclick="openWindow('media-player-window'); toggleStartMenu()">
+        <img src="MEDIA/multimedia.ico" alt="Multimedia Viewer">
+        <span>Multimedia Viewer</span>
+      </div>
+      <div class="start-menu-divider"></div>
+      <div class="start-menu-item" onclick="shutdown()">
+        <img src="MEDIA/shutdown.ico" alt="Shutdown" id="start-menu-item-small">
+        <span>Shutdown...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- taskbar -->
+  <div id="taskbar">
+    <button id="start-button" onclick="toggleStartMenu()">
+      <img src="MEDIA/start.ico" alt="Start">
+      <span style="margin-left: 5px;">Start</span>
+    </button>
+    <div id="taskbar-tray">
+      <img src="MEDIA/speaker.ico" alt="Volume" onclick="toggleVolumePopup()">
+      <div id="volume-popup">
+        <label for="volume-slider">Cowbell</label>
+        <div class="is-vertical">
+          <input type="range" id="volume-slider" class="has-box-indicator" min="0" max="100" value="50"
+            onchange="setGlobalVolume(this.value)">
+        </div>
+        <span id="volume-label">50%</span>
+      </div>
+      <span id="clock">12:00 PM</span>
+    </div>
+  </div>
 
   <!-- safe mode dialog -->
   <div class="window"
-    style="position: fixed; top: 10px; right: 10px; display: none; z-index: 20000; width: 250px; box-shadow: 0 0 10px red;"
+    style="position: fixed; top: 10px; right: 10px; display: none; z-index: 20000; width: 250px;"
     id="virus-remove-dialog">
     <div class="title-bar">
       <div class="title-bar-text">System Alert</div>
@@ -564,7 +598,7 @@
       </div>
     </div>
     <div class="window-body" style="text-align: center;">
-      <p style="color: red; font-weight: bold;">System Instability Detected!</p>
+      <p style="color: red;">System Instability Detected</p>
       <p>Do you want to restore the system to a stable restore point?</p>
       <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
         <button onclick="removeVirus()">Yes!</button>

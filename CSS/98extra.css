@@ -1,3 +1,10 @@
+#desktop-wrapper {
+    width: 100vw;
+    height: 100vh;
+    background-color: #008080;
+    overflow: hidden;
+}
+
 #desktop {
     position: absolute;
     top: 0;
@@ -459,26 +466,49 @@ h1 {
 }
 
 .barrel-roll {
-    animation: barrel-roll 2s linear infinite;
+    animation: barrel-roll 2s linear;
 }
 
 .hue-spin {
-    animation: hue-spin 1s linear infinite;
+    animation: hue-spin 3s linear;
 }
 
 .css-less * {
     all: initial !important;
-    font-family: serif !important;
-    /* Keep text readable-ish */
+    font-family: "Times New Roman", serif !important;
     display: block !important;
 }
 
-/* Exclude System Alert from CSS-less if possible, but difficult with * selector.
-    We will target #desktop-wrapper for this class to avoid breaking the alert dialog. */
+.css-less button,
+.css-less input,
+.css-less a,
+.css-less [role="tab"],
+.css-less img,
+.css-less iframe,
+.css-less video,
+.css-less audio {
+    display: inline-block !important;
+}
+
+.css-less button,
+.css-less input,
+.css-less a,
+.css-less [role="tab"] {
+    cursor: pointer !important;
+}
+
+/* Keep desktop icon grid intact during css-less */
+.css-less #desktop {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, 80px) !important;
+    grid-template-rows: repeat(auto-fill, 80px) !important;
+    grid-auto-flow: column !important;
+    gap: 20px !important;
+}
 
 .color-downgrade {
-    filter: contrast(150%) brightness(0.8) grayscale(0.5);
-    /* Approximation of 4-bit/limited palette feeling */
+    filter: contrast(300%) saturate(0.15) brightness(0.85);
+    /* Aggressive posterization for that 4-bit feel */
 }
 
 .blurry {
@@ -497,8 +527,11 @@ h1 {
 }
 
 .unrecognizable {
-    font-family: 'Wingdings', 'Webdings', 'Symbol', cursive !important;
+    font-family: 'Dot', 'Wingdings', 'Webdings', 'Symbol', cursive !important;
     letter-spacing: -2px;
+    word-spacing: -4px;
+    text-transform: uppercase;
+    font-size: 0.85em;
 }
 
 #ransomware-overlay {

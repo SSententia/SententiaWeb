@@ -28,32 +28,39 @@ document.addEventListener('pointerup', function (e) {
 
 // SETTINGS RADIO LISTENERS
 const radioButtons = document.querySelectorAll('input[id|="S"]');
-const output = document.querySelector('#output');
+const EFFECT_TARGETS = ['desktop-wrapper', 'taskbar', 'start-menu'];
 
-// Add a change event listener to each radio button
+function addEffectClass(cls) {
+  EFFECT_TARGETS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add(cls);
+  });
+}
+
+function removeEffectClass(cls) {
+  EFFECT_TARGETS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove(cls);
+  });
+}
+
 radioButtons.forEach(radio => {
   radio.addEventListener('change', (event) => {
-    if (event.target.checked) {
-      const selectedValue = event.target.value;
-      if (selectedValue.includes("RM")) {
-        let removeEffects = selectedValue.replace("RM-", "");
-        removeEffects.forEach(effect => {
-          removeEffect(effect);
-        });
-      }
-      if (typeof window[selectedValue] === 'function') {
-        window[selectedValue]();
-      }
+    if (!event.target.checked) return;
+
+    const removeAttr = event.target.getAttribute('data-remove');
+    if (removeAttr) {
+      removeAttr.split(/\s+/).forEach(cls => {
+        if (cls) removeEffectClass(cls);
+      });
+    }
+
+    const effectAttr = event.target.getAttribute('data-effect');
+    if (effectAttr) {
+      addEffectClass(effectAttr);
     }
   });
 });
-
-function removeEffect(effect) {
-  const effectElement = document.getElementById(effect);
-  if (effectElement) {
-    effectElement.remove();
-  }
-}
 
 // VOLUME CONTROL
 let globalVolume = 0.5;
@@ -514,10 +521,9 @@ function removeVirus() {
 
   document.getElementById('virus-remove-dialog').style.display = 'none';
 
-  // Clean up DOM - remove all possible virus classes
-  const wrapper = document.getElementById('desktop-wrapper');
+  // Clean up DOM - remove all possible virus classes from all targets
   const possibleClasses = ['shake-effect', 'invert-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less', 'color-downgrade', 'blurry', 'monochrome', 'unrecognizable'];
-  possibleClasses.forEach(cls => wrapper.classList.remove(cls));
+  possibleClasses.forEach(cls => removeEffectClass(cls));
 
   // Clean up Overlays
   document.getElementById('bsod-overlay').style.display = 'none';
@@ -543,8 +549,7 @@ function removeVirus() {
 }
 
 function removeEffect(effect) {
-  const wrapper = document.getElementById('desktop-wrapper');
-  wrapper.classList.remove(effect);
+  removeEffectClass(effect);
 }
 
 function keepVirus() {
@@ -555,47 +560,57 @@ function keepVirus() {
 // Effect Functions - Now Permanent by default (no setTimeout removal)
 
 function shakeScreen() {
-  document.getElementById('desktop-wrapper').classList.add('shake-effect');
-  // kept header animation infinite in CSS? No, it was .5s. 
-  // User said "Make the effects permanent".
-  // But 'shake' is an animation that ends. To make it permanent, we'd need 'infinite' in CSS.
-  // The current CSS for .shake-effect is '0.5s ease-in-out'. It will stop.
-  // However, since we call it repeatedly in the loop, it might re-trigger if we toggle it, but we aren't toggling.
-  // Let's assume for 'shake' re-triggering isn't the main goal, but stacking other filters is.
-  // If we want persistent shake, we should update CSS to infinite. 
-  // But I won't touch CSS again unless critical.
+  removeEffectClass('shake-effect');
+  // force reflow on all targets so animation restarts
+  EFFECT_TARGETS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) void el.offsetWidth;
+  });
+  addEffectClass('shake-effect');
 }
 
 function invertColors() {
-  document.getElementById('desktop-wrapper').classList.add('invert-effect');
+  addEffectClass('invert-effect');
 }
 
 function barrelRoll() {
-  document.getElementById('desktop-wrapper').classList.add('barrel-roll');
+  removeEffectClass('barrel-roll');
+  // force reflow on all targets so animation restarts
+  EFFECT_TARGETS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) void el.offsetWidth;
+  });
+  addEffectClass('barrel-roll');
 }
 
 function hueSpin() {
-  document.getElementById('desktop-wrapper').classList.add('hue-spin');
+  removeEffectClass('hue-spin');
+  // force reflow on all targets so animation restarts
+  EFFECT_TARGETS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) void el.offsetWidth;
+  });
+  addEffectClass('hue-spin');
 }
 
 function cssLess() {
-  document.getElementById('desktop-wrapper').classList.add('css-less');
+  addEffectClass('css-less');
 }
 
 function colorDowngrade() {
-  document.getElementById('desktop-wrapper').classList.add('color-downgrade');
+  addEffectClass('color-downgrade');
 }
 
 function blurScreen() {
-  document.getElementById('desktop-wrapper').classList.add('blurry');
+  addEffectClass('blurry');
 }
 
 function monochrome() {
-  document.getElementById('desktop-wrapper').classList.add('monochrome');
+  addEffectClass('monochrome');
 }
 
 function unrecognizable() {
-  document.getElementById('desktop-wrapper').classList.add('unrecognizable');
+  addEffectClass('unrecognizable');
 }
 
 function flyingWindows() {
@@ -721,9 +736,10 @@ document.querySelectorAll('.window').forEach(win => {
 function changeWallpaper() {
   var url = document.getElementById('wallpaper-url').value;
   if (url) {
-    document.body.style.backgroundImage = "url('" + url + "')";
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundRepeat = "no-repeat";
+    const wrapper = document.getElementById('desktop-wrapper');
+    wrapper.style.backgroundImage = "url('" + url + "')";
+    wrapper.style.backgroundSize = "cover";
+    wrapper.style.backgroundPosition = "center";
+    wrapper.style.backgroundRepeat = "no-repeat";
   }
 }
