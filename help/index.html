@@ -275,6 +275,38 @@
         </div>
       </div>
 
+      <!-- Bogol compression window -->
+      <div class="window" style="position: absolute; top: 50vh; left: 50vw; display: none; width: 500px;"
+        id="bogol-window">
+        <div class="title-bar">
+          <div class="title-bar-text">Bogol(L) Compression Algorithm Wizard</div>
+          <div class="title-bar-controls">
+            <button aria-label="Close" onclick="closeWindow(this)"></button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div id="bogol-step-banner">
+            <div class="bogol-window-banner">
+              <span><img src="MEDIA/bogol.avif" class="bogol-window-banner"></span>
+            </div>
+          </div>
+          <div id="bogol-step-confirm" style="display: none;">
+            <p style="padding: 12px; margin: 0;">
+              Are you sure you want to compress the Main Drive (C:) using the Bogol(L) algorithm?
+              This action is non-reversible and may result in permanent data loss. The estimated
+              compression ratio is impossible to calculate beforehand. Continue at your own risk.
+            </p>
+            <div class="progress-indicator segmented" id="bogol-progress" style="margin: 12px;">
+              <span class="progress-indicator-bar" id="bogol-progress-bar" style="width: 0%;"></span>
+            </div>
+          </div>
+          <div class="bogol-window-banner-button">
+            <button onclick="bogolBack()" id="bogol-back-btn" style="display: none;">Back</button>
+            <button onclick="bogolNext()" id="bogol-next-btn">Next</button>
+          </div>
+        </div>
+      </div>
+
       <!-- navigation window -->
       <div class="window" style="position: absolute; top: 50vh; left: 50vw; width: 300px;" id="about-window">
         <div class="title-bar">
@@ -496,8 +528,9 @@
           <div class="window-body">
             <fieldset>
               <legend>Storage</legend>
-                <button onclick="Compress()" id="settings-button">Compress Main Drive</button>
+                <button onclick="openWindow('bogol-window')" id="settings-button" >Compress Main Drive</button>
                 <button disabled id="settings-button">Backup Main Drive</button>
+                <p style="margin-top: 4px; margin-bottom: 3px; color: red">Not enough storage!</p>
             </fieldset>
             <fieldset>
               <legend>Mouse</legend>
@@ -510,7 +543,7 @@
             </fieldset>
             <fieldset>
               <legend>Other Hardwares</legend>
-                <button onclick="Blackscreen()" id="settings-button">Disconnect VGA</button>
+                <button onclick="Blackscreen()" id="settings-button">Eject VGA</button>
             </fieldset>
           </div>
         </div>

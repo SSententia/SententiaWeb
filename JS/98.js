@@ -62,6 +62,103 @@ radioButtons.forEach(radio => {
   });
 });
 
+// BOGOL COMPRESSION WIZARD
+let bogolProgressInterval = null;
+
+function bogolNext() {
+  const stepBanner = document.getElementById('bogol-step-banner');
+  const stepConfirm = document.getElementById('bogol-step-confirm');
+  const backBtn = document.getElementById('bogol-back-btn');
+  const nextBtn = document.getElementById('bogol-next-btn');
+  const progressBar = document.getElementById('bogol-progress-bar');
+
+  if (!stepBanner || !stepConfirm) return;
+
+  // Banner -> Confirmation step
+  if (stepBanner.style.display !== 'none') {
+    stepBanner.style.display = 'none';
+    stepConfirm.style.display = 'block';
+    backBtn.style.display = 'inline-block';
+    return;
+  }
+
+  // Confirmation -> Start progress (only if not already running)
+  if (progressBar && bogolProgressInterval === null) {
+    nextBtn.disabled = true;
+    backBtn.disabled = true;
+    bogolProgressInterval = setInterval(() => animateBogolProgress(progressBar), 120);
+  }
+}
+
+function bogolBack() {
+  const stepBanner = document.getElementById('bogol-step-banner');
+  const stepConfirm = document.getElementById('bogol-step-confirm');
+  const backBtn = document.getElementById('bogol-back-btn');
+  const progressBar = document.getElementById('bogol-progress-bar');
+
+  // Disable during active progress
+  if (bogolProgressInterval !== null) return;
+  if (!stepBanner) return;
+
+  stepBanner.style.display = 'block';
+  stepConfirm.style.display = 'none';
+  backBtn.style.display = 'none';
+  if (progressBar) progressBar.style.width = '0%';
+}
+
+function animateBogolProgress(bar) {
+  let current = parseFloat(bar.style.width) || 0;
+  let increment;
+
+  if (current < 70) {
+    // Fast phase: 5-15% per tick
+    increment = Math.random() * 10 + 5;
+  } else if (current < 90) {
+    // Mid phase: 2-7% per tick (slowing down)
+    increment = Math.random() * 5 + 2;
+  } else if (current < 99) {
+    // Near completion: 0.3-1.5% per tick (much slower)
+    increment = Math.random() * 1.2 + 0.3;
+  } else {
+    // Final push
+    increment = 1;
+  }
+
+  current = Math.min(current + increment, 100);
+  bar.style.width = current + '%';
+
+  if (current >= 100) {
+    clearInterval(bogolProgressInterval);
+    bogolProgressInterval = null;
+    setTimeout(() => {
+      const bsod = document.getElementById('bsod-overlay');
+      if (bsod) bsod.style.display = 'flex';
+    }, 400);
+  }
+}
+
+function resetBogolWizard() {
+  const stepBanner = document.getElementById('bogol-step-banner');
+  const stepConfirm = document.getElementById('bogol-step-confirm');
+  const backBtn = document.getElementById('bogol-back-btn');
+  const nextBtn = document.getElementById('bogol-next-btn');
+  const progressBar = document.getElementById('bogol-progress-bar');
+
+  if (bogolProgressInterval !== null) {
+    clearInterval(bogolProgressInterval);
+    bogolProgressInterval = null;
+  }
+
+  if (stepBanner) stepBanner.style.display = 'block';
+  if (stepConfirm) stepConfirm.style.display = 'none';
+  if (backBtn) {
+    backBtn.style.display = 'none';
+    backBtn.disabled = false;
+  }
+  if (nextBtn) nextBtn.disabled = false;
+  if (progressBar) progressBar.style.width = '0%';
+}
+
 // VOLUME CONTROL
 let globalVolume = 0.5;
 
@@ -138,6 +235,9 @@ function shutdown() {
 // WINDOW MANAGEMENT
 function closeWindow(button) {
   const windowDiv = button.closest('.window');
+  if (windowDiv && windowDiv.id === 'bogol-window') {
+    resetBogolWizard();
+  }
   if (windowDiv) {
     setTimeout(() => {
       windowDiv.style.display = 'none';
