@@ -62,6 +62,352 @@ radioButtons.forEach(radio => {
   });
 });
 
+// KEYBOARD MOUSE POINTER
+const keyboardMouse = {
+  enabled: false,
+  cursorEl: null,
+  warningEl: null,
+  hideCursorStyleEl: null,
+  rafId: null,
+  x: 0,
+  y: 0,
+  baseSpeed: 2,
+  maxSpeed: 14,
+  accelDuration: 500,
+  keyDownTime: {},
+  keys: {},
+  cursorState: 'normal',
+  forcedState: null,
+  lastLeftClickTime: 0,
+  blockerEl: null,
+  dragKeyHeld: false,
+  dragStarted: false,
+  dragKey: 'f'
+};
+
+const CURSOR_STATES = {
+  normal: 'MEDIA/CNormal.cur',
+  point: 'MEDIA/CPoint.cur',
+  beam: 'MEDIA/CBeam.cur',
+  wait: 'MEDIA/CWait.cur',
+  help: 'MEDIA/CHelp.cur',
+  denied: 'MEDIA/CDenied.cur'
+};
+
+function ensureKeyboardMouseElements() {
+  if (!keyboardMouse.cursorEl) {
+    const container = document.createElement('div');
+    container.id = 'kb-cursor';
+    const img = document.createElement('img');
+    img.src = CURSOR_STATES.normal;
+    img.alt = '';
+    img.draggable = false;
+    img.addEventListener('load', () => {
+      container.classList.toggle('kb-cursor-fallback', img.naturalWidth === 0);
+    });
+    img.addEventListener('error', () => {
+      container.classList.add('kb-cursor-fallback');
+    });
+    container.appendChild(img);
+    document.body.appendChild(container);
+    keyboardMouse.cursorEl = container;
+  }
+  if (!keyboardMouse.warningEl) {
+    const warning = document.createElement('div');
+    warning.id = 'kb-warning';
+    warning.textContent = "Device 'device:mouse' conflicts with 'device:typing'!";
+    document.body.appendChild(warning);
+    keyboardMouse.warningEl = warning;
+  }
+  if (!keyboardMouse.blockerEl) {
+    const blocker = document.createElement('div');
+    blocker.id = 'kb-mouse-blocker';
+    document.body.appendChild(blocker);
+    keyboardMouse.blockerEl = blocker;
+  }
+  if (!keyboardMouse.hideCursorStyleEl) {
+    const style = document.createElement('style');
+    style.id = 'kb-hide-cursor-style';
+    document.head.appendChild(style);
+    keyboardMouse.hideCursorStyleEl = style;
+  }
+}
+
+function setMouseDevice(device) {
+  if (device === 'keyboard') {
+    enableKeyboardMouse();
+  } else {
+    disableKeyboardMouse();
+  }
+}
+
+function enableKeyboardMouse() {
+  ensureKeyboardMouseElements();
+  keyboardMouse.enabled = true;
+  if (keyboardMouse.x === 0 && keyboardMouse.y === 0) {
+    keyboardMouse.x = Math.floor(window.innerWidth / 2);
+    keyboardMouse.y = Math.floor(window.innerHeight / 2);
+  }
+  keyboardMouse.cursorEl.style.display = 'block';
+  keyboardMouse.warningEl.style.display = 'block';
+  if (keyboardMouse.blockerEl) keyboardMouse.blockerEl.style.display = 'block';
+  keyboardMouse.hideCursorStyleEl.textContent =
+    '.kb-cursor-hidden, .kb-cursor-hidden * { cursor: none !important; }';
+  document.body.classList.add('kb-cursor-hidden');
+  updateKeyboardMouseCursorPos();
+  startKeyboardMouseLoop();
+}
+
+function disableKeyboardMouse() {
+  keyboardMouse.enabled = false;
+  if (keyboardMouse.rafId !== null) {
+    cancelAnimationFrame(keyboardMouse.rafId);
+    keyboardMouse.rafId = null;
+  }
+  // End any active drag
+  if (keyboardMouse.dragKeyHeld) kbEndDrag();
+  keyboardMouse.forcedState = null;
+  if (keyboardMouse.cursorEl) keyboardMouse.cursorEl.style.display = 'none';
+  if (keyboardMouse.warningEl) keyboardMouse.warningEl.style.display = 'none';
+  if (keyboardMouse.blockerEl) keyboardMouse.blockerEl.style.display = 'none';
+  if (keyboardMouse.hideCursorStyleEl) keyboardMouse.hideCursorStyleEl.textContent = '';
+  document.body.classList.remove('kb-cursor-hidden');
+  keyboardMouse.keys = {};
+  keyboardMouse.keyDownTime = {};
+}
+
+function updateKeyboardMouseCursorPos() {
+  if (!keyboardMouse.cursorEl) return;
+  keyboardMouse.cursorEl.style.left = keyboardMouse.x + 'px';
+  keyboardMouse.cursorEl.style.top = keyboardMouse.y + 'px';
+}
+
+function setCursorState(state) {
+  if (!keyboardMouse.cursorEl) return;
+  if (state === keyboardMouse.cursorState) return;
+  keyboardMouse.cursorState = state;
+  const newSrc = CURSOR_STATES[state] || CURSOR_STATES.normal;
+  const img = keyboardMouse.cursorEl.querySelector('img');
+  if (img) img.src = newSrc;
+}
+
+let lastCursorCheckX = -1;
+let lastCursorCheckY = -1;
+
+function maybeUpdateCursorState() {
+  if (keyboardMouse.x !== lastCursorCheckX || keyboardMouse.y !== lastCursorCheckY) {
+    lastCursorCheckX = keyboardMouse.x;
+    lastCursorCheckY = keyboardMouse.y;
+    determineHoverState();
+  }
+}
+
+function kbElementFromPoint(x, y) {
+  if (keyboardMouse.blockerEl) keyboardMouse.blockerEl.style.pointerEvents = 'none';
+  try {
+    return document.elementFromPoint(x, y);
+  } finally {
+    if (keyboardMouse.blockerEl) keyboardMouse.blockerEl.style.pointerEvents = 'all';
+  }
+}
+
+function determineHoverState() {
+  if (keyboardMouse.forcedState) {
+    setCursorState(keyboardMouse.forcedState);
+    return;
+  }
+  const el = kbElementFromPoint(keyboardMouse.x, keyboardMouse.y);
+  if (!el) {
+    setCursorState('normal');
+    return;
+  }
+  let node = el;
+  while (node && node !== document.body) {
+    if (node.nodeType === 1) {
+      if (node.matches && node.matches(':disabled')) {
+        setCursorState('denied');
+        return;
+      }
+      if (node.tagName === 'TEXTAREA' || node.isContentEditable) {
+        setCursorState('beam');
+        return;
+      }
+      if (node.tagName === 'INPUT') {
+        const type = (node.type || '').toLowerCase();
+        if (type !== 'button' && type !== 'submit' && type !== 'reset' && type !== 'checkbox' && type !== 'radio' && type !== 'range' && type !== 'color' && type !== 'file') {
+          setCursorState('beam');
+          return;
+        }
+      }
+      if (node.tagName === 'BUTTON' || node.tagName === 'A' || (node.matches && node.matches('[role="tab"]'))) {
+        setCursorState('point');
+        return;
+      }
+      if (node.getAttribute && node.getAttribute('ondblclick')) {
+        setCursorState('point');
+        return;
+      }
+      if ((node.tagName === 'IMG' && node.alt === 'Help') || (node.classList && node.classList.contains && Array.from(node.classList).some(c => /help/i.test(c)))) {
+        setCursorState('help');
+        return;
+      }
+    }
+    node = node.parentElement;
+  }
+  setCursorState('normal');
+}
+
+function kbGetAccelSpeed(key) {
+  const t0 = keyboardMouse.keyDownTime[key];
+  if (!t0) return keyboardMouse.baseSpeed;
+  const elapsed = performance.now() - t0;
+  const t = Math.min(elapsed / keyboardMouse.accelDuration, 1);
+  return keyboardMouse.baseSpeed + (keyboardMouse.maxSpeed - keyboardMouse.baseSpeed) * t * t;
+}
+
+function startKeyboardMouseLoop() {
+  function tick() {
+    if (!keyboardMouse.enabled) {
+      keyboardMouse.rafId = null;
+      return;
+    }
+    const prevX = keyboardMouse.x, prevY = keyboardMouse.y;
+    let dx = 0, dy = 0;
+    const k = keyboardMouse.keys;
+    // Find the dominant speed from active movement keys
+    let activeSpeed = keyboardMouse.baseSpeed;
+    const moveKeys = ['w', 'arrowup', 's', 'arrowdown', 'a', 'arrowleft', 'd', 'arrowright'];
+    for (const mk of moveKeys) {
+      if (k[mk]) { activeSpeed = Math.max(activeSpeed, kbGetAccelSpeed(mk)); }
+    }
+    if (k['w'] || k['arrowup']) dy -= 1;
+    if (k['s'] || k['arrowdown']) dy += 1;
+    if (k['a'] || k['arrowleft']) dx -= 1;
+    if (k['d'] || k['arrowright']) dx += 1;
+    if (dx !== 0 || dy !== 0) {
+      const len = Math.sqrt(dx * dx + dy * dy);
+      dx = (dx / len) * activeSpeed;
+      dy = (dy / len) * activeSpeed;
+      keyboardMouse.x = Math.max(0, Math.min(window.innerWidth, keyboardMouse.x + dx));
+      keyboardMouse.y = Math.max(0, Math.min(window.innerHeight, keyboardMouse.y + dy));
+      updateKeyboardMouseCursorPos();
+    }
+    // Drag: dispatch pointermove on document while drag key is held
+    if (keyboardMouse.dragKeyHeld && keyboardMouse.dragStarted && (keyboardMouse.x !== prevX || keyboardMouse.y !== prevY)) {
+      const moveEv = new PointerEvent('pointermove', {
+        bubbles: true, cancelable: true,
+        clientX: keyboardMouse.x, clientY: keyboardMouse.y, button: 0, pointerType: 'mouse'
+      });
+      try { document.dispatchEvent(moveEv); } catch (_) {}
+    }
+    maybeUpdateCursorState();
+    keyboardMouse.rafId = requestAnimationFrame(tick);
+  }
+  keyboardMouse.rafId = requestAnimationFrame(tick);
+}
+
+function safeKeyboardMouseDispatch(target, event) {
+  try { target.dispatchEvent(event); } catch (err) { console.warn('Keyboard mouse dispatch error:', err); }
+}
+
+function performKeyboardMouseClick(button) {
+  const el = kbElementFromPoint(keyboardMouse.x, keyboardMouse.y);
+  if (!el || el.matches(':disabled')) return;
+  const baseOpts = {
+    bubbles: true,
+    cancelable: true,
+    clientX: keyboardMouse.x,
+    clientY: keyboardMouse.y
+  };
+  if (button === 'left') {
+    const now = performance.now();
+    const isDouble = keyboardMouse.lastLeftClickTime > 0 && (now - keyboardMouse.lastLeftClickTime) <= 500;
+    keyboardMouse.lastLeftClickTime = now;
+    safeKeyboardMouseDispatch(el, new PointerEvent('pointerdown', { ...baseOpts, button: 0, pointerType: 'mouse' }));
+    safeKeyboardMouseDispatch(el, new MouseEvent('mousedown', { ...baseOpts, button: 0 }));
+    safeKeyboardMouseDispatch(el, new PointerEvent('pointerup', { ...baseOpts, button: 0, pointerType: 'mouse' }));
+    safeKeyboardMouseDispatch(el, new MouseEvent('mouseup', { ...baseOpts, button: 0 }));
+    safeKeyboardMouseDispatch(el, new MouseEvent('click', { ...baseOpts, button: 0 }));
+    if (isDouble) {
+      safeKeyboardMouseDispatch(el, new MouseEvent('dblclick', { ...baseOpts, button: 0 }));
+    }
+  } else {
+    safeKeyboardMouseDispatch(el, new PointerEvent('pointerdown', { ...baseOpts, button: 2, pointerType: 'mouse' }));
+    safeKeyboardMouseDispatch(el, new MouseEvent('mousedown', { ...baseOpts, button: 2 }));
+    safeKeyboardMouseDispatch(el, new PointerEvent('pointerup', { ...baseOpts, button: 2, pointerType: 'mouse' }));
+    safeKeyboardMouseDispatch(el, new MouseEvent('mouseup', { ...baseOpts, button: 2 }));
+    safeKeyboardMouseDispatch(el, new MouseEvent('contextmenu', { ...baseOpts, button: 2 }));
+  }
+}
+
+window.addEventListener('keydown', function (e) {
+  if (!keyboardMouse.enabled) return;
+  const ae = document.activeElement;
+  const isFormControl = ae && (
+    ae.tagName === 'INPUT' ||
+    ae.tagName === 'TEXTAREA' ||
+    ae.tagName === 'SELECT'
+  );
+  const k = e.key.toLowerCase();
+  if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(k) !== -1) {
+    keyboardMouse.keys[k] = true;
+    if (!isFormControl) e.preventDefault();
+  } else if (!e.repeat && (k === 'q' || k === 'z' || k === 'e' || k === 'x')) {
+    if (!isFormControl) e.preventDefault();
+    if (k === 'q' || k === 'z') {
+      performKeyboardMouseClick('left');
+    } else {
+      performKeyboardMouseClick('right');
+    }
+  } else if (k === keyboardMouse.dragKey) {
+    if (!isFormControl) e.preventDefault();
+    if (!isFormControl && !keyboardMouse.dragKeyHeld) {
+      keyboardMouse.dragKeyHeld = true;
+      keyboardMouse.dragStarted = false;
+      const el = kbElementFromPoint(keyboardMouse.x, keyboardMouse.y);
+      if (el && !el.matches(':disabled')) {
+        const opts = { bubbles: true, cancelable: true, clientX: keyboardMouse.x, clientY: keyboardMouse.y, button: 0, pointerType: 'mouse' };
+        safeKeyboardMouseDispatch(el, new PointerEvent('pointerdown', opts));
+        safeKeyboardMouseDispatch(el, new MouseEvent('mousedown', { ...opts, button: 0 }));
+        keyboardMouse.dragStarted = true;
+        setCursorState('point');
+      }
+    }
+  } else if (k === 'escape') {
+    if (keyboardMouse.dragKeyHeld) kbEndDrag();
+    disableKeyboardMouse();
+    const select = document.getElementById('mouse-device-select');
+    if (select) select.value = 'mouse';
+  }
+  // Record key-down time for acceleration
+  if (!keyboardMouse.keyDownTime[k]) {
+    keyboardMouse.keyDownTime[k] = performance.now();
+  }
+});
+
+function kbEndDrag() {
+  if (keyboardMouse.dragStarted) {
+    const opts = { bubbles: true, cancelable: true, clientX: keyboardMouse.x, clientY: keyboardMouse.y, button: 0, pointerType: 'mouse' };
+    document.dispatchEvent(new PointerEvent('pointerup', opts));
+    document.dispatchEvent(new MouseEvent('mouseup', { ...opts, button: 0 }));
+  }
+  keyboardMouse.dragKeyHeld = false;
+  keyboardMouse.dragStarted = false;
+}
+
+window.addEventListener('keyup', function (e) {
+  const k = e.key.toLowerCase();
+  if (keyboardMouse.enabled) {
+    if (keyboardMouse.keys[k] !== undefined) {
+      keyboardMouse.keys[k] = false;
+    }
+    if (k === keyboardMouse.dragKey) {
+      kbEndDrag();
+    }
+    delete keyboardMouse.keyDownTime[k];
+  }
+});
+
 // BOGOL COMPRESSION WIZARD
 let bogolProgressInterval = null;
 
@@ -71,6 +417,7 @@ function bogolNext() {
   const backBtn = document.getElementById('bogol-back-btn');
   const nextBtn = document.getElementById('bogol-next-btn');
   const progressBar = document.getElementById('bogol-progress-bar');
+  const bogolWindow = document.getElementById('bogol-window');
 
   if (!stepBanner || !stepConfirm) return;
 
@@ -86,6 +433,13 @@ function bogolNext() {
   if (progressBar && bogolProgressInterval === null) {
     nextBtn.disabled = true;
     backBtn.disabled = true;
+    // Hide the window's close (X) button so the compression cannot be cancelled
+    if (bogolWindow) {
+      const closeBtn = bogolWindow.querySelector('.title-bar-controls button[aria-label="Close"]');
+      if (closeBtn) closeBtn.style.display = 'none';
+    }
+    // Force the keyboard mouse cursor to show the wait state during compression
+    keyboardMouse.forcedState = 'wait';
     bogolProgressInterval = setInterval(() => animateBogolProgress(progressBar), 120);
   }
 }
@@ -133,6 +487,8 @@ function animateBogolProgress(bar) {
     setTimeout(() => {
       const bsod = document.getElementById('bsod-overlay');
       if (bsod) bsod.style.display = 'flex';
+      // Release the forced wait state on the keyboard mouse cursor
+      keyboardMouse.forcedState = null;
     }, 400);
   }
 }
@@ -143,6 +499,7 @@ function resetBogolWizard() {
   const backBtn = document.getElementById('bogol-back-btn');
   const nextBtn = document.getElementById('bogol-next-btn');
   const progressBar = document.getElementById('bogol-progress-bar');
+  const bogolWindow = document.getElementById('bogol-window');
 
   if (bogolProgressInterval !== null) {
     clearInterval(bogolProgressInterval);
@@ -157,6 +514,11 @@ function resetBogolWizard() {
   }
   if (nextBtn) nextBtn.disabled = false;
   if (progressBar) progressBar.style.width = '0%';
+  // Restore the close (X) button when the wizard resets
+  if (bogolWindow) {
+    const closeBtn = bogolWindow.querySelector('.title-bar-controls button[aria-label="Close"]');
+    if (closeBtn) closeBtn.style.display = '';
+  }
 }
 
 // VOLUME CONTROL
@@ -323,7 +685,8 @@ function dragElement(elmnt) {
 // TABS
 document.querySelectorAll('[role="tablist"]').forEach(tabList => {
   tabList.addEventListener('click', (e) => {
-    const link = e.target.closest('a');
+    const tab = e.target.closest('[role="tab"]');
+    const link = tab ? tab.querySelector('a') : e.target.closest('a');
     if (!link) return;
     e.preventDefault();
 
@@ -629,6 +992,14 @@ function removeVirus() {
   document.getElementById('bsod-overlay').style.display = 'none';
   document.getElementById('ransomware-overlay').style.display = 'none';
   document.getElementById('rickroll-overlay').style.display = 'none';
+  // Cancel any pending BSOD retry timeout and hide the black-screen flash
+  // so the BSOD can't reappear after the system was just "restored"
+  if (typeof bsodRetryTimeout !== 'undefined' && bsodRetryTimeout !== null) {
+    clearTimeout(bsodRetryTimeout);
+    bsodRetryTimeout = null;
+  }
+  const blackOverlay = document.getElementById('black-overlay');
+  if (blackOverlay) blackOverlay.style.display = 'none';
   // stop youtube video
   const iframe = document.querySelector('#rickroll-overlay iframe');
   const tempSrc = iframe.src;
@@ -747,17 +1118,26 @@ function persistentBSOD() {
   // We'll handle the 'click' and 'keydown' at global level or on the element events.
 }
 
-function closeBSOD() {
-  // This function was originally called by onclick. Now we want to restart it.
-  // User: "Each time you do, the screen goes black and the BSOD reappears again."
-  const bsod = document.getElementById('bsod-overlay');
-  bsod.style.display = 'none'; // Flash black (hide bsod reveal desktop background or something?)
-  // actually body background is teal. 
-  // to make it "screen goes black", we can flash a black div or just re-show BSOD instantly.
+let bsodRetryTimeout = null;
 
-  setTimeout(() => {
+function closeBSOD() {
+  // User: "Each time you do, the screen goes black and the BSOD reappears again."
+  // Flash a full-screen black overlay, wait, then re-show the BSOD.
+  const bsod = document.getElementById('bsod-overlay');
+  const black = document.getElementById('black-overlay');
+  if (!bsod) return;
+  // Cancel any in-flight retry so mash-clicks don't stack timeouts
+  if (bsodRetryTimeout !== null) {
+    clearTimeout(bsodRetryTimeout);
+    bsodRetryTimeout = null;
+  }
+  bsod.style.display = 'none';
+  if (black) black.style.display = 'block';
+  bsodRetryTimeout = setTimeout(() => {
+    bsodRetryTimeout = null;
+    if (black) black.style.display = 'none';
     bsod.style.display = 'flex';
-  }, 100);
+  }, 1800);
 }
 
 function ransomware() {

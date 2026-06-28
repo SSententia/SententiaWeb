@@ -296,7 +296,7 @@
               This action is non-reversible and may result in permanent data loss. The estimated
               compression ratio is impossible to calculate beforehand. Continue at your own risk.
             </p>
-            <div class="progress-indicator segmented" id="bogol-progress" style="margin: 12px;">
+            <div class="progress-indicator" id="bogol-progress" style="margin: 12px;">
               <span class="progress-indicator-bar" id="bogol-progress-bar" style="width: 0%;"></span>
             </div>
           </div>
@@ -536,9 +536,9 @@
               <legend>Mouse</legend>
               <button onclick="Blackscreen()" id="settings-button">Mouse trail</button>
               <p>Choose your mouse device:</p>
-              <select>
-                <option>Compliant and submissive mouse</option>
-                <option>Inconvenient keyboard.</option>
+              <select id="mouse-device-select" onchange="setMouseDevice(this.value)">
+                <option value="mouse">Compliant and submissive mouse</option>
+                <option value="keyboard">Inconvenient keyboard.</option>
               </select>
             </fieldset>
             <fieldset>
@@ -661,6 +661,9 @@
       <h1 style="color: #ffaa00; font-size: 24px;">It's now safe to turn off your computer.</h1>
     </div>
   </div>
+
+  <!-- black screen overlay (BSOD flash between retries) -->
+  <div id="black-overlay"></div>
 
   <!-- bsod overlay for virus -->
   <div id="bsod-overlay" onclick="closeBSOD()">
