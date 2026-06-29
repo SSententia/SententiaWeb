@@ -51,13 +51,15 @@ radioButtons.forEach(radio => {
     const removeAttr = event.target.getAttribute('data-remove');
     if (removeAttr) {
       removeAttr.split(/\s+/).forEach(cls => {
-        if (cls) removeEffectClass(cls);
+        if (cls === 'js-less') toggleJSLess(false);
+        else if (cls) removeEffectClass(cls);
       });
     }
 
     const effectAttr = event.target.getAttribute('data-effect');
     if (effectAttr) {
-      addEffectClass(effectAttr);
+      if (effectAttr === 'js-less') toggleJSLess(true);
+      else addEffectClass(effectAttr);
     }
   });
 });
@@ -341,6 +343,7 @@ function performKeyboardMouseClick(button) {
 }
 
 window.addEventListener('keydown', function (e) {
+  if (jsLessActive) return;
   if (!keyboardMouse.enabled) return;
   const ae = document.activeElement;
   const isFormControl = ae && (
@@ -407,6 +410,313 @@ window.addEventListener('keyup', function (e) {
     delete keyboardMouse.keyDownTime[k];
   }
 });
+
+// ACCESSIBILITY JOKE EFFECTS
+let vgaEjected = false;
+let narratorEnabled = false;
+let narratorAudio = null;
+let stickyKeysEnabled = false;
+let stickyKeysDialogShown = false;
+let stickyKeysSound = null;
+let stickyKeysKeyTimes = [];
+let magnifierEnabled = false;
+let highContrastEnabled = false;
+let highBrightnessEnabled = false;
+let bigTextEnabled = false;
+let bigCursorEnabled = false;
+let bigCursorEl = null;
+
+// EJECT VGA
+function Blackscreen() {
+  vgaEjected = !vgaEjected;
+  let overlay = document.getElementById('vga-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'vga-overlay';
+    overlay.innerHTML = '<span>NO SIGNAL</span>';
+    overlay.addEventListener('click', function () {
+      vgaEjected = false;
+      overlay.style.display = 'none';
+    });
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = vgaEjected ? 'flex' : 'none';
+}
+
+// NARRATOR
+function EnableNarrator() {
+  narratorEnabled = !narratorEnabled;
+  if (!narratorAudio) {
+    narratorAudio = document.createElement('audio');
+    narratorAudio.loop = true;
+    narratorAudio.preload = 'auto';
+    // TODO: Replace with actual narrator voice file
+    // narratorAudio.src = 'MEDIA/narrator.wav';
+    document.body.appendChild(narratorAudio);
+  }
+  narratorAudio.volume = globalVolume;
+  if (narratorEnabled) {
+    narratorAudio.play().catch(() => {});
+  } else {
+    narratorAudio.pause();
+    narratorAudio.currentTime = 0;
+  }
+}
+
+// STICKY KEYS
+function EnableSticky() {
+  if (stickyKeysEnabled) {
+    stickyKeysEnabled = false;
+  } else {
+    showStickyKeysDialog();
+  }
+}
+
+function showStickyKeysDialog() {
+  if (stickyKeysDialogShown) return;
+  stickyKeysDialogShown = true;
+
+  let dialog = document.getElementById('sticky-keys-dialog');
+  if (!dialog) {
+    dialog = document.createElement('div');
+    dialog.className = 'window';
+    dialog.id = 'sticky-keys-dialog';
+    var cx = Math.floor((window.innerWidth - 350) / 2);
+    var cy = Math.floor((window.innerHeight - 200) / 2);
+    dialog.style.top = cy + 'px';
+    dialog.style.left = cx + 'px';
+    dialog.innerHTML =
+      '<div class="title-bar">' +
+        '<div class="title-bar-text">Sticky Keys</div>' +
+        '<div class="title-bar-controls">' +
+          '<button aria-label="Close" onclick="dismissStickyKeys()"></button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="window-body" style="padding: 15px; text-align: center;">' +
+        '<p>Sticky Keys lets you press one key at a time for keyboard shortcuts.</p>' +
+        '<p style="margin-top: 10px;">Do you want to turn on Sticky Keys?</p>' +
+        '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">' +
+          '<button onclick="activateStickyKeys()">Yes</button>' +
+          '<button onclick="dismissStickyKeys()">No</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(dialog);
+    dragElement(dialog);
+  }
+  dialog.style.display = 'block';
+  dialog.style.zIndex = highestZIndex++;
+}
+
+function activateStickyKeys() {
+  stickyKeysEnabled = true;
+  stickyKeysDialogShown = false;
+  var dialog = document.getElementById('sticky-keys-dialog');
+  if (dialog) dialog.style.display = 'none';
+  if (!stickyKeysSound) {
+    stickyKeysSound = document.createElement('audio');
+    stickyKeysSound.preload = 'auto';
+    // TODO: Replace with actual sticky keys sound file
+    // stickyKeysSound.src = 'MEDIA/sticky.wav';
+    document.body.appendChild(stickyKeysSound);
+  }
+  stickyKeysSound.volume = globalVolume;
+}
+
+function dismissStickyKeys() {
+  stickyKeysDialogShown = false;
+  var dialog = document.getElementById('sticky-keys-dialog');
+  if (dialog) dialog.style.display = 'none';
+}
+
+// Track repeated key presses for Sticky Keys (any key triggers the dialog)
+document.addEventListener('keydown', function (e) {
+  if (jsLessActive) return;
+  if (!e.repeat) {
+    var now = Date.now();
+    stickyKeysKeyTimes.push(now);
+    stickyKeysKeyTimes = stickyKeysKeyTimes.filter(function (t) { return now - t < 3000; });
+    if (stickyKeysKeyTimes.length >= 5) {
+      stickyKeysKeyTimes = [];
+      if (!stickyKeysEnabled) showStickyKeysDialog();
+    }
+  }
+  if (stickyKeysEnabled && stickyKeysSound) {
+    stickyKeysSound.currentTime = 0;
+    stickyKeysSound.volume = globalVolume;
+    stickyKeysSound.play().catch(() => {});
+  }
+});
+
+// MAGNIFIER
+function EnableZoom() {
+  magnifierEnabled = !magnifierEnabled;
+  if (magnifierEnabled) {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.transform = 'scale(3)';
+    document.body.style.transformOrigin = '50% 50%';
+    document.addEventListener('mousemove', magnifierFollow);
+  } else {
+    document.documentElement.style.overflow = '';
+    document.body.style.transform = '';
+    document.body.style.transformOrigin = '';
+    document.removeEventListener('mousemove', magnifierFollow);
+  }
+}
+
+function magnifierFollow(e) {
+  if (!magnifierEnabled) return;
+  var x = (e.clientX / window.innerWidth * 100);
+  var y = (e.clientY / window.innerHeight * 100);
+  document.body.style.transformOrigin = x + '% ' + y + '%';
+}
+
+// HIGH CONTRAST
+function EnableHicon() {
+  highContrastEnabled = !highContrastEnabled;
+  if (highContrastEnabled) {
+    addEffectClass('high-contrast-effect');
+  } else {
+    removeEffectClass('high-contrast-effect');
+  }
+}
+
+// HIGH BRIGHTNESS
+function EnableHibrig() {
+  highBrightnessEnabled = !highBrightnessEnabled;
+  if (highBrightnessEnabled) {
+    addEffectClass('high-brightness-effect');
+  } else {
+    removeEffectClass('high-brightness-effect');
+  }
+}
+
+// BIG TEXT
+function EnableBigtxt() {
+  bigTextEnabled = !bigTextEnabled;
+  if (bigTextEnabled) {
+    addEffectClass('big-text-effect');
+  } else {
+    removeEffectClass('big-text-effect');
+  }
+}
+
+// BIG CURSOR
+function EnableBigcur() {
+  bigCursorEnabled = !bigCursorEnabled;
+  if (bigCursorEnabled) {
+    if (!bigCursorEl) {
+      bigCursorEl = document.createElement('div');
+      bigCursorEl.className = 'big-cursor-overlay';
+      var img = document.createElement('img');
+      img.src = CURSOR_STATES.normal;
+      img.alt = '';
+      img.draggable = false;
+      img.addEventListener('error', function () {
+        bigCursorEl.classList.add('big-cursor-fallback');
+      });
+      bigCursorEl.appendChild(img);
+      document.body.appendChild(bigCursorEl);
+    }
+    bigCursorEl.style.display = 'block';
+    document.body.classList.add('big-cursor-hidden');
+    document.addEventListener('mousemove', bigCursorFollow);
+  } else {
+    if (bigCursorEl) bigCursorEl.style.display = 'none';
+    document.body.classList.remove('big-cursor-hidden');
+    document.removeEventListener('mousemove', bigCursorFollow);
+  }
+}
+
+function bigCursorFollow(e) {
+  if (!bigCursorEnabled || !bigCursorEl) return;
+  bigCursorEl.style.left = e.clientX + 'px';
+  bigCursorEl.style.top = e.clientY + 'px';
+}
+
+// USER-PROVIDED CURSOR (Personalization → Cursor)
+// Reads the URL from #cursor-url and applies it as a CSS cursor with !important
+// so it overrides the default body cursor. Empty input resets to default.
+function changeCursor() {
+  const input = document.getElementById('cursor-url');
+  const url = input ? input.value.trim() : '';
+  let style = document.getElementById('custom-cursor-style');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'custom-cursor-style';
+    document.head.appendChild(style);
+  }
+  if (url) {
+    // Escape backslash and double-quote so the cursor URL can't break out of the css url()
+    const safeUrl = url.replace(/[\\"]/g, '\\$&');
+    style.textContent =
+      'html, body, button, a, input, select, textarea, [role="tab"], ' +
+      '.desktop-icon, .title-bar { cursor: url("' + safeUrl + '"), auto !important; }';
+  } else {
+    style.textContent = '';
+  }
+}
+
+// MOUSE TRAIL (System → Mouse)
+// Draws a small fading circle under the cursor on every mousemove.
+// Clicking the button toggles the trail on/off.
+let mouseTrailActive = false;
+const TRAIL_COLORS = ['#ffffff', '#ff4040', '#ffff40', '#40ff40', '#40ffff', '#ff40ff'];
+
+function toggleMouseTrail() {
+  mouseTrailActive = !mouseTrailActive;
+  if (mouseTrailActive) {
+    document.addEventListener('mousemove', addTrailDot);
+  } else {
+    document.removeEventListener('mousemove', addTrailDot);
+    // Clean up any dot that was still on-screen
+    document.querySelectorAll('.mouse-trail-dot').forEach(function (d) { d.remove(); });
+  }
+}
+
+function addTrailDot(e) {
+  if (!mouseTrailActive) return;
+  if (jsLessActive) return;
+  if (e.target && e.target.closest && e.target.closest('input, textarea, select, button')) return;
+  const dot = document.createElement('div');
+  dot.className = 'mouse-trail-dot';
+  dot.style.left = e.clientX + 'px';
+  dot.style.top = e.clientY + 'px';
+  const color = TRAIL_COLORS[Math.floor(Math.random() * TRAIL_COLORS.length)];
+  dot.style.background = color;
+  document.body.appendChild(dot);
+  // Force layout so the transition animates from the initial state
+  setTimeout(function () {
+    dot.classList.add('trail-fade');
+    setTimeout(function () { dot.remove(); }, 650);
+  }, 30);
+}
+
+// JS-LESS (Personalization → Script)
+// Adds body.js-less class + a notice. CSS blocks pointer-events on
+// non-form elements so icons, windows and most buttons stop responding,
+// but the radios themselves stay clickable so the user can flip back.
+let jsLessActive = false;
+
+function toggleJSLess(on) {
+  jsLessActive = !!on;
+  if (on) {
+    document.body.classList.add('js-less');
+    let notice = document.getElementById('js-less-readme');
+    if (!notice) {
+      notice = document.createElement('div');
+      notice.id = 'js-less-readme';
+      notice.innerHTML = '<strong>JS-less mode is on.</strong><br>' +
+        'Most interactions are disabled.<br>' +
+        'Use the <em>Script</em> fieldset radios to turn JavaScript back on.';
+      document.body.appendChild(notice);
+    }
+    notice.style.display = 'block';
+  } else {
+    document.body.classList.remove('js-less');
+    const notice = document.getElementById('js-less-readme');
+    if (notice) notice.style.display = 'none';
+  }
+}
 
 // BOGOL COMPRESSION WIZARD
 let bogolProgressInterval = null;
@@ -537,6 +847,10 @@ function setGlobalVolume(value) {
   document.querySelectorAll('audio, video').forEach(media => {
     media.volume = globalVolume;
   });
+
+  // keep narrator and sticky-keys audio in sync
+  if (narratorAudio) narratorAudio.volume = globalVolume;
+  if (stickyKeysSound) stickyKeysSound.volume = globalVolume;
 }
 
 document.addEventListener('click', function (e) {
@@ -985,7 +1299,7 @@ function removeVirus() {
   document.getElementById('virus-remove-dialog').style.display = 'none';
 
   // Clean up DOM - remove all possible virus classes from all targets
-  const possibleClasses = ['shake-effect', 'invert-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less', 'color-downgrade', 'blurry', 'monochrome', 'unrecognizable'];
+  const possibleClasses = ['shake-effect', 'invert-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less', 'color-downgrade', 'blurry', 'monochrome', 'unrecognizable', 'high-contrast-effect', 'high-brightness-effect', 'big-text-effect'];
   possibleClasses.forEach(cls => removeEffectClass(cls));
 
   // Clean up Overlays
@@ -1009,6 +1323,38 @@ function removeVirus() {
   // Stop flying windows
   activeIntervals.forEach(int => clearInterval(int));
   activeIntervals = [];
+
+  // Clean up user-provided cursor
+  const customCursorStyle = document.getElementById('custom-cursor-style');
+  if (customCursorStyle) customCursorStyle.textContent = '';
+  const cursorInput = document.getElementById('cursor-url');
+  if (cursorInput) cursorInput.value = '';
+
+  // Clean up mouse trail (state reset, not toggle, so a desync can't flip it back on)
+  if (mouseTrailActive) {
+    mouseTrailActive = false;
+    document.removeEventListener('mousemove', addTrailDot);
+    document.querySelectorAll('.mouse-trail-dot').forEach(function (d) { d.remove(); });
+  }
+
+  // Clean up JS-less mode (state reset)
+  if (jsLessActive) {
+    jsLessActive = false;
+    document.body.classList.remove('js-less');
+    const notice = document.getElementById('js-less-readme');
+    if (notice) notice.style.display = 'none';
+  }
+
+  // Clean up accessibility joke effects
+  const vgaOverlay = document.getElementById('vga-overlay');
+  if (vgaOverlay) { vgaOverlay.style.display = 'none'; vgaEjected = false; }
+  if (narratorEnabled) { EnableNarrator(); }
+  if (magnifierEnabled) { EnableZoom(); }
+  if (bigCursorEnabled) { EnableBigcur(); }
+  highContrastEnabled = false;
+  highBrightnessEnabled = false;
+  bigTextEnabled = false;
+  stickyKeysEnabled = false;
 
   // Reset windows positions
   document.querySelectorAll('.window').forEach(win => {
@@ -1155,6 +1501,7 @@ function multipleAlerts() {
 
 // Capture Keys for BSOD persistence
 document.addEventListener('keydown', function (e) {
+  if (jsLessActive) return;
   if (document.getElementById('bsod-overlay').style.display === 'flex') {
     closeBSOD(); // Trigger the fake close loops
     e.preventDefault();

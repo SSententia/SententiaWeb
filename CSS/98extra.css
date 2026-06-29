@@ -658,3 +658,146 @@ body {
     display: none;
     white-space: nowrap;
 }
+
+/* ACCESSIBILITY JOKE EFFECTS */
+
+/* VGA Eject */
+#vga-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #111;
+    z-index: 30000;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: none;
+}
+#vga-overlay span {
+    color: #555;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 28px;
+    letter-spacing: 4px;
+    animation: vga-blink 2s ease-in-out infinite;
+}
+@keyframes vga-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* High Contrast */
+.high-contrast-effect {
+    filter: contrast(500%) saturate(0) !important;
+}
+
+/* High Brightness */
+.high-brightness-effect {
+    filter: brightness(3) !important;
+}
+
+/* BIG TEXT */
+.big-text-effect,
+.big-text-effect * {
+    font-size: 2.5rem !important;
+    line-height: 1.2 !important;
+}
+
+/* BIG CURSOR */
+.big-cursor-overlay {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999999;
+    display: none;
+    transform: translate(-4px, -6px);
+}
+.big-cursor-overlay img {
+    width: 80px;
+    height: 80px;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -webkit-optimize-contrast;
+}
+.big-cursor-overlay.big-cursor-fallback > img {
+    display: none;
+}
+.big-cursor-overlay.big-cursor-fallback::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 20px solid white;
+    border-right: 24px solid transparent;
+    border-top: 35px solid white;
+    border-bottom: 20px solid transparent;
+}
+.big-cursor-hidden,
+.big-cursor-hidden * {
+    cursor: none !important;
+}
+
+/* Sticky Keys Dialog */
+#sticky-keys-dialog {
+    position: fixed !important;
+    z-index: 25000 !important;
+    width: 350px;
+}
+
+/* MOUSE TRAIL */
+.mouse-trail-dot {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: white;
+    border: 1px solid #888;
+    z-index: 999990;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    opacity: 1;
+    transform: scale(1);
+}
+.mouse-trail-dot.trail-fade {
+    opacity: 0;
+    transform: scale(0.3);
+}
+
+/* JS-LESS (kills interactivity; radios / inputs remain usable so you can toggle back) */
+.js-less button,
+.js-less .desktop-icon,
+.js-less .title-bar,
+.js-less .window,
+.js-less a,
+.js-less [role="tab"],
+.js-less #taskbar,
+.js-less #start-menu {
+    cursor: not-allowed !important;
+    opacity: 0.55;
+    filter: grayscale(70%);
+}
+.js-less,
+.js-less *:not(input):not(textarea):not(select):not(label) {
+    pointer-events: none !important;
+}
+#js-less-readme {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffe1;
+    color: black;
+    padding: 10px 16px;
+    font-family: "MS Sans Serif", "Dot", sans-serif;
+    font-size: 12px;
+    border: 2px solid #808080;
+    box-shadow: 2px 2px 0 #000;
+    z-index: 999998;
+    pointer-events: none;
+    display: none;
+    text-align: center;
+}
+#js-less-readme strong { color: red; }

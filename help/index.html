@@ -462,9 +462,10 @@
               <legend>Cursor</legend>
               <div class="field-row">
                 <label for="cursor-url">Paste cursor URL:</label>
-                <input id="cursor-url" type="text" style="width: 150px;">
+                <input id="cursor-url" type="text" style="width: 150px;" placeholder="Leave blank to reset">
                 <button onclick="changeCursor()">Submit</button>
               </div>
+              <p style="font-size: 10px; margin: 4px 0 0 0; color: #555;">Tip: works with .cur, .png, .svg or any image. Blank = reset.</p>
             </fieldset>
             <fieldset>
               <legend>Font</legend>
@@ -486,6 +487,17 @@
               <div class="field-row">
                 <input id="S-csradio2" type="radio" name="css-settings" data-effect="css-less">
                 <label for="S-csradio2">CSS-less</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Script</legend>
+              <div class="field-row">
+                <input checked id="S-jsradio1" type="radio" name="js-settings" data-remove="js-less">
+                <label for="S-jsradio1">Use JS</label>
+              </div>
+              <div class="field-row">
+                <input id="S-jsradio2" type="radio" name="js-settings" data-effect="js-less">
+                <label for="S-jsradio2">JS-less</label>
               </div>
             </fieldset>
           </div>
@@ -534,7 +546,7 @@
             </fieldset>
             <fieldset>
               <legend>Mouse</legend>
-              <button onclick="Blackscreen()" id="settings-button">Mouse trail</button>
+              <button onclick="toggleMouseTrail()" id="settings-button">Mouse trail</button>
               <p>Choose your mouse device:</p>
               <select id="mouse-device-select" onchange="setMouseDevice(this.value)">
                 <option value="mouse">Compliant and submissive mouse</option>
