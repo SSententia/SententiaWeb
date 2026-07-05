@@ -46,7 +46,6 @@ function extractBodyText(html) {
   return stripHtml(bodyContent || html);
 }
 
-// Main
 const entries = fs.readdirSync(wonderDir, { withFileTypes: true });
 const pages = [];
 

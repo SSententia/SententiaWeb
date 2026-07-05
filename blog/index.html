@@ -60,7 +60,6 @@
             flex-direction: column;
         }
 
-        /* Small scrollbar that appears on hover */
         .content-section::-webkit-scrollbar {
             width: 6px;
         }
@@ -158,6 +157,10 @@
         .c-blue   { color: #6699FF; }
         .c-red    { color: #FF6666; }
 
+        #spacer-section {
+            flex: 1;
+        }
+
         .spacer {
             flex-grow: 1;
         }
@@ -218,13 +221,13 @@
         <main>
 <pre>
 <div class="entry item" data-id="url">  Sententia://blog.site </div>
-<div class="entry empty">&nbsp;</div>
 <div class="entry item blog" data-id="b1">  <span class="c-yellow">|</span> An Introduction: Blogs!</div>
 <div class="entry item blog" data-id="b2">  <span class="c-blue">|</span> Why Casualties:Unknown is Goated</div>
 <div class="entry item blog parent" data-id="b3">  <span class="c-blue">|</span> Something Something Test Juej</div>
 <div class="entry item blog child" data-parent="b3" data-id="b4" style="display: none;">  <span class="c-blue">└|</span> Something Test Juej Chapter Two (better)</div>
 <div class="entry item blog child" data-parent="b3" data-id="b5" style="display: none;">   <span class="c-blue">└|</span> Juej Chapter Three (even better)</div>
 <div class="entry item blog" data-id="b6">  <span class="c-red">|</span> Important Idk</div>
+<div class="entry empty">&nbsp;</div>
 </pre>
         </main>
     </div>
@@ -266,17 +269,17 @@
     </div>
 
     <script>
-        // Random greeting
-        const greetings = ["Welcome back", "Hello again", "Good to see you", "Greetings", "Salutations"];
-        document.querySelector('.header > :nth-child(2)').textContent = greetings[Math.floor(Math.random() * greetings.length)];
+        // Utility Selectors
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
 
-        // Date formatting
-        const today = new Date();
-        const dateStr = today.getFullYear() + '.' + String(today.getMonth() + 1).padStart(2, '0') + '.' + String(today.getDate()).padStart(2, '0');
-        document.querySelector('.header > :nth-child(3)').textContent = dateStr;
-        document.querySelector('.header > :nth-child(4)').textContent = 'Last updated: ' + dateStr;
+        // States & Inits
+        const infoEl = $('#info-content');
+        const navigable = Array.from($$('.entry.item, .divider, .footer span'));
+        let pointerIdx = navigable.findIndex(el => el.dataset.id === 'url');
+        if (pointerIdx === -1) pointerIdx = 0;
+        let selectedDivider = null;
 
-        // Blog post info data
         const postInfo = {
             'url': 'The root of the blog. Welcome!',
             'b1': 'An introduction to what this blog is about.',
@@ -287,243 +290,192 @@
             'b6': 'Something important, we just don\'t know what.'
         };
 
-        // Parse indentation from first text node of each entry
-        document.querySelectorAll('.entry').forEach(el => {
-            const textNode = el.firstChild;
-            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-                const match = textNode.textContent.match(/^( +)/);
-                if (match) {
-                    el.dataset.indent = match[1].length;
+        // Cache for pointer manipulation
+        navigable.forEach(el => {
+            if (el.classList.contains('entry')) {
+                const textNode = el.firstChild;
+                if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                    const match = textNode.textContent.match(/^( +)/);
+                    if (match) {
+                        el.dataset.indent = match[1].length;
+                        el.dataset.originalText = textNode.textContent;
+                    }
                 }
             }
         });
 
-        let navigable = Array.from(document.querySelectorAll('.entry.item, .divider, .footer span'));
-        let pointerIdx = navigable.findIndex(el => el.dataset.id === 'url');
-        if (pointerIdx === -1) pointerIdx = 0;
-        let selectedDivider = null;
-
+        // UI Updates
         function updateInfo(active) {
             if (!active) return;
             const id = active.dataset.id;
-            const infoEl = document.getElementById('info-content');
             
             if (active.classList.contains('divider')) {
-                if (id === 'info') infoEl.textContent = 'Cyan Divider: Controls the Info section height.';
-                else if (id === 'extra') infoEl.textContent = 'Yellow Divider: Controls the Extra section height.';
-                else if (id === 'top') infoEl.textContent = 'Top Divider: Controls the Header section height.';
-                else if (id === 'middle') infoEl.textContent = 'Middle Divider: Controls the Blog list height.';
+                const map = {
+                    info: 'Cyan Divider: Controls the Info section height.',
+                    extra: 'Yellow Divider: Controls the Extra section height.',
+                    top: 'Top Divider: Controls the Header section height.',
+                    middle: 'Middle Divider: Controls the Blog list height.'
+                };
+                infoEl.textContent = map[id] || '';
             } else if (id && postInfo[id]) {
                 infoEl.textContent = postInfo[id];
-            } else if (active.tagName === 'SPAN' && active.closest('.footer')) {
+            } else if (active.matches('.footer span')) {
                 infoEl.textContent = `Button: ${active.textContent.trim()}`;
             }
         }
 
         function updatePointer() {
-            // Clear divider pointers (restore diamond text)
-            document.querySelectorAll('.divider .diamond').forEach(d => {
-                d.textContent = '◇';
-            });
-            
-            // Clear footer selections
-            document.querySelectorAll('.footer span.selected').forEach(el => el.classList.remove('selected'));
-
-            // Clear entry pointers
-            document.querySelectorAll('.entry.item').forEach(el => {
-                const textNode = el.firstChild;
-                if (textNode && textNode.nodeType === Node.TEXT_NODE && el.dataset.indent) {
-                    const indent = parseInt(el.dataset.indent);
-                    const spaces = ' '.repeat(indent);
-                    if (textNode.textContent[0] === '>') {
-                        textNode.textContent = spaces + textNode.textContent.slice(indent);
-                    }
-                }
+            $$('.divider .diamond').forEach(d => d.textContent = '◇');
+            $$('.footer span.selected').forEach(el => el.classList.remove('selected'));
+            $$('.entry.item').forEach(el => {
+                if (el.dataset.originalText) el.firstChild.textContent = el.dataset.originalText;
             });
 
-            let active = navigable[pointerIdx];
+            const active = navigable[pointerIdx];
             if (!active) return;
 
             if (active.classList.contains('divider')) {
                 active.querySelector('.diamond').textContent = '> ◇';
-            } else if (active.tagName === 'SPAN' && active.closest('.footer')) {
+            } else if (active.matches('.footer span')) {
                 active.classList.add('selected');
-            } else {
-                const textNode = active.firstChild;
-                if (textNode && textNode.nodeType === Node.TEXT_NODE && active.dataset.indent) {
-                    const indent = parseInt(active.dataset.indent);
-                    textNode.textContent = '>' + ' '.repeat(indent - 1) + textNode.textContent.slice(indent);
-                }
+            } else if (active.dataset.originalText) {
+                active.firstChild.textContent = '>' + active.dataset.originalText.slice(1);
             }
         }
 
         function handleEnter() {
-            let active = navigable[pointerIdx];
+            const active = navigable[pointerIdx];
             if (!active) return;
+
             if (active.classList.contains('divider')) {
                 if (selectedDivider === active) {
                     selectedDivider = null;
                     active.querySelector('.diamond').style.backgroundColor = 'transparent';
                 } else {
-                    if (selectedDivider) {
-                        selectedDivider.querySelector('.diamond').style.backgroundColor = 'transparent';
-                    }
+                    if (selectedDivider) selectedDivider.querySelector('.diamond').style.backgroundColor = 'transparent';
                     selectedDivider = active;
                     active.querySelector('.diamond').style.backgroundColor = 'yellow';
                 }
-            } else if (active.tagName === 'SPAN' && active.closest('.footer')) {
+            } else if (active.matches('.footer span')) {
                 active.click();
             } else {
                 alert('Redirecting to placeholder for: ' + active.textContent.trim().replace(/^>\s*/, ''));
             }
         }
 
+        // Section Resizing & Collapsing
+        function getTarget(divider) {
+            const isAbove = ['top', 'middle'].includes(divider.dataset.id);
+            return isAbove ? divider.previousElementSibling : divider.nextElementSibling;
+        }
+
+        function collapseSection(divider) {
+            divider.classList.add('collapsed');
+            const target = getTarget(divider);
+            if (target) target.style.display = 'none';
+        }
+
+        function expandSection(divider) {
+            divider.classList.remove('collapsed');
+            const target = getTarget(divider);
+            if (target) target.style.display = '';
+        }
+
+        function resizeSection(divider, delta) {
+            const target = getTarget(divider);
+            if (!target) return;
+
+            if (divider.classList.contains('collapsed')) expandSection(divider);
+
+            const currentHeight = target.getBoundingClientRect().height;
+            const spacerHeight = $('#spacer-section').getBoundingClientRect().height;
+            const maxAvailable = currentHeight + spacerHeight - 10;
+
+            const isAbove = ['top', 'middle'].includes(divider.dataset.id);
+            let newHeight = isAbove ? currentHeight + delta : currentHeight - delta;
+            newHeight = Math.max(0, Math.min(newHeight, maxAvailable));
+
+            target.style.flex = `0 0 ${newHeight}px`;
+
+            if (newHeight <= 20) collapseSection(divider);
+            else expandSection(divider);
+        }
+
+        // Navigation
+        function findNextVisible(startIdx, direction, dividersOnly = false) {
+            let i = startIdx + direction;
+            while (i >= 0 && i < navigable.length) {
+                const el = navigable[i];
+                if (el.offsetParent !== null && (!dividersOnly || el.classList.contains('divider'))) {
+                    return i;
+                }
+                i += direction;
+            }
+            return startIdx;
+        }
+
         document.addEventListener('keydown', (e) => {
             if (selectedDivider) {
-                let dy = 0;
-                if (e.key === 'ArrowUp') dy = -5;
-                if (e.key === 'ArrowDown') dy = 5;
-                if (dy !== 0) {
-                    let sectionAbove = selectedDivider.previousElementSibling;
-                    if (sectionAbove) {
-                        let startHeight = sectionAbove.getBoundingClientRect().height;
-                        if (selectedDivider.classList.contains('collapsed')) {
-                            selectedDivider.classList.remove('collapsed');
-                            sectionAbove.style.display = '';
-                            startHeight = 0;
-                        }
-                        let newHeight = startHeight + dy;
-                        let sectionBelow = selectedDivider.nextElementSibling;
-                        if (sectionBelow) {
-                            let belowHeight = sectionBelow.getBoundingClientRect().height;
-                            let maxHeight = startHeight + belowHeight - 20;
-                            newHeight = Math.max(0, Math.min(newHeight, maxHeight));
-                        }
-                        sectionAbove.style.flex = `0 0 ${newHeight}px`;
-                        
-                        if (selectedDivider.dataset.id === 'info' && newHeight <= 20) {
-                            selectedDivider.classList.add('collapsed');
-                            sectionAbove.style.display = 'none';
-                        }
-                    }
-                    e.preventDefault();
-                    return;
-                }
-                if (e.key === 'Escape' || e.key === 'Enter' || e.key === 'z' || e.key === 'Z') {
+                if (e.key === 'ArrowUp') { resizeSection(selectedDivider, -5); e.preventDefault(); return; }
+                if (e.key === 'ArrowDown') { resizeSection(selectedDivider, 5); e.preventDefault(); return; }
+                if (e.key === 'ArrowLeft') { collapseSection(selectedDivider); e.preventDefault(); return; }
+                if (e.key === 'ArrowRight') { expandSection(selectedDivider); e.preventDefault(); return; }
+                if (['Escape', 'Enter', 'z', 'Z'].includes(e.key)) {
                     selectedDivider.querySelector('.diamond').style.backgroundColor = 'transparent';
                     selectedDivider = null;
                     e.preventDefault();
                     return;
                 }
-                if (e.key === 'ArrowLeft') {
-                    selectedDivider.classList.add('collapsed');
-                    let content = selectedDivider.nextElementSibling;
-                    if (content) content.style.display = 'none';
-                    e.preventDefault();
-                    return;
-                }
-                if (e.key === 'ArrowRight') {
-                    selectedDivider.classList.remove('collapsed');
-                    let content = selectedDivider.nextElementSibling;
-                    if (content) content.style.display = '';
-                    e.preventDefault();
-                    return;
-                }
             }
 
+            // Pointer
             if (e.key === 'ArrowDown') {
-                if (e.altKey) {
-                    for (let i = pointerIdx + 1; i < navigable.length; i++) {
-                        if (navigable[i].classList.contains('divider') && navigable[i].offsetParent !== null) {
-                            pointerIdx = i; break;
-                        }
-                    }
-                } else {
-                    let nextIdx = pointerIdx + 1;
-                    while (nextIdx < navigable.length && navigable[nextIdx].offsetParent === null) {
-                        nextIdx++;
-                    }
-                    if (nextIdx < navigable.length) {
-                        pointerIdx = nextIdx;
-                    }
-                }
-                updatePointer();
-                updateInfo(navigable[pointerIdx]);
-                e.preventDefault();
+                pointerIdx = findNextVisible(pointerIdx, 1, e.altKey);
+                updatePointer(); updateInfo(navigable[pointerIdx]); e.preventDefault();
             } else if (e.key === 'ArrowUp') {
-                if (e.altKey) {
-                    for (let i = pointerIdx - 1; i >= 0; i--) {
-                        if (navigable[i].classList.contains('divider') && navigable[i].offsetParent !== null) {
-                            pointerIdx = i; break;
-                        }
-                    }
-                } else {
-                    let prevIdx = pointerIdx - 1;
-                    while (prevIdx >= 0 && navigable[prevIdx].offsetParent === null) {
-                        prevIdx--;
-                    }
-                    if (prevIdx >= 0) {
-                        pointerIdx = prevIdx;
-                    }
-                }
-                updatePointer();
-                updateInfo(navigable[pointerIdx]);
-                e.preventDefault();
+                pointerIdx = findNextVisible(pointerIdx, -1, e.altKey);
+                updatePointer(); updateInfo(navigable[pointerIdx]); e.preventDefault();
             } else if (e.key === 'ArrowRight') {
-                let active = navigable[pointerIdx];
+                const active = navigable[pointerIdx];
                 if (active.classList.contains('parent')) {
                     active.dataset.collapsed = 'false';
-                    document.querySelectorAll(`.child[data-parent="${active.dataset.id}"]`).forEach(c => c.style.display = 'block');
-                    let firstChild = document.querySelector(`.child[data-parent="${active.dataset.id}"]`);
-                    if (firstChild) {
-                        pointerIdx = navigable.indexOf(firstChild);
-                        updatePointer();
-                        updateInfo(navigable[pointerIdx]);
-                    }
+                    $$(`.child[data-parent="${active.dataset.id}"]`).forEach(c => c.style.display = 'block');
+                    const firstChild = $(`.child[data-parent="${active.dataset.id}"]`);
+                    if (firstChild) pointerIdx = navigable.indexOf(firstChild);
+                    updatePointer(); updateInfo(navigable[pointerIdx]);
                 }
             } else if (e.key === 'ArrowLeft') {
-                let active = navigable[pointerIdx];
+                const active = navigable[pointerIdx];
                 if (active.classList.contains('child')) {
-                    let parent = document.querySelector(`[data-id="${active.dataset.parent}"]`);
-                    if (parent) {
-                        pointerIdx = navigable.indexOf(parent);
-                        updatePointer();
-                        updateInfo(navigable[pointerIdx]);
-                    }
+                    const parent = $(`[data-id="${active.dataset.parent}"]`);
+                    if (parent) pointerIdx = navigable.indexOf(parent);
+                    updatePointer(); updateInfo(navigable[pointerIdx]);
                 } else if (active.classList.contains('parent') && active.dataset.collapsed !== 'true') {
                     active.dataset.collapsed = 'true';
-                    document.querySelectorAll(`.child[data-parent="${active.dataset.id}"]`).forEach(c => c.style.display = 'none');
+                    $$(`.child[data-parent="${active.dataset.id}"]`).forEach(c => c.style.display = 'none');
                 }
-            } else if (e.key === 'Enter' || e.key === 'z' || e.key === 'Z') {
+            } else if (['Enter', 'z', 'Z'].includes(e.key)) {
                 handleEnter();
                 e.preventDefault();
             }
         });
 
-        // Mouse clicks for navigation and actions
+        // Mouse
         navigable.forEach((el, idx) => {
-            el.addEventListener('click', (e) => {
+            el.addEventListener('click', () => {
                 pointerIdx = idx;
                 updatePointer();
                 updateInfo(el);
 
                 if (el.classList.contains('parent')) {
-                    if (el.dataset.collapsed === 'true') {
-                        el.dataset.collapsed = 'false';
-                        document.querySelectorAll(`.child[data-parent="${el.dataset.id}"]`).forEach(c => c.style.display = 'block');
-                    } else {
-                        el.dataset.collapsed = 'true';
-                        document.querySelectorAll(`.child[data-parent="${el.dataset.id}"]`).forEach(c => c.style.display = 'none');
-                    }
-                } else if (!el.closest('.footer')) {
-                    // Do not enter if it's a divider (handled by double click or drag)
-                    if (!el.classList.contains('divider')) {
-                        handleEnter();
-                    }
+                    el.dataset.collapsed = el.dataset.collapsed === 'true' ? 'false' : 'true';
+                    const display = el.dataset.collapsed === 'true' ? 'none' : 'block';
+                    $$(`.child[data-parent="${el.dataset.id}"]`).forEach(c => c.style.display = display);
+                } else if (!el.matches('.footer span') && !el.classList.contains('divider')) {
+                    handleEnter();
                 }
             });
-            
-            // Hover sync: update pointer ONLY
+
             if (!el.classList.contains('divider')) {
                 el.addEventListener('mouseenter', () => {
                     if (selectedDivider) {
@@ -536,79 +488,51 @@
             }
         });
 
-        // Initial state for parent collapse
-        document.querySelectorAll('.parent').forEach(p => p.dataset.collapsed = 'true');
-        updatePointer();
-
-        // Draggable dividers
+        // Draggable Dividers
         let isDragging = false;
         let activeDivider = null;
         let startY = 0;
         let startHeight = 0;
-        let sectionAbove = null;
+        let startSpacerHeight = 0;
 
-        document.querySelectorAll('.divider').forEach(div => {
+        $$('.divider').forEach(div => {
             div.addEventListener('mousedown', (e) => {
                 activeDivider = div;
                 isDragging = true;
                 startY = e.clientY;
                 
-                sectionAbove = div.previousElementSibling;
-                if (sectionAbove) {
-                    startHeight = sectionAbove.getBoundingClientRect().height;
-                    if (div.classList.contains('collapsed')) {
-                        div.classList.remove('collapsed');
-                        sectionAbove.style.display = '';
-                        startHeight = 0;
-                    }
-                    sectionAbove.style.flex = `0 0 ${startHeight}px`;
+                const target = getTarget(div);
+                if (target) {
+                    if (div.classList.contains('collapsed')) expandSection(div);
+                    startHeight = target.getBoundingClientRect().height;
+                    startSpacerHeight = $('#spacer-section').getBoundingClientRect().height;
                 }
                 div.style.cursor = 'grabbing';
                 e.preventDefault();
             });
 
             div.addEventListener('dblclick', () => {
-                let content = div.nextElementSibling;
-                if (content) {
-                    if (div.classList.contains('collapsed')) {
-                        div.classList.remove('collapsed');
-                        content.style.display = '';
-                    } else {
-                        div.classList.add('collapsed');
-                        content.style.display = 'none';
-                    }
-                }
+                div.classList.contains('collapsed') ? expandSection(div) : collapseSection(div);
             });
         });
 
         window.addEventListener('mousemove', (e) => {
             if (!isDragging || !activeDivider) return;
             const dy = e.clientY - startY;
-            
-            if (sectionAbove.style.display === 'none') {
-                sectionAbove.style.display = '';
-                activeDivider.classList.remove('collapsed');
-                startHeight = 0;
-                startY = e.clientY;
-            }
+            const isAbove = ['top', 'middle'].includes(activeDivider.dataset.id);
+            const target = getTarget(activeDivider);
+            if (!target) return;
 
-            let newHeight = Math.max(0, startHeight + dy);
-            
-            let sectionBelow = activeDivider.nextElementSibling;
-            if (sectionBelow) {
-                let belowHeight = sectionBelow.getBoundingClientRect().height;
-                let maxHeight = startHeight + belowHeight - 20;
-                newHeight = Math.min(newHeight, maxHeight);
-            }
-            
-            sectionAbove.style.flex = `0 0 ${newHeight}px`;
-            
-            // Auto-collapse cyan divider when near yellow
-            if (activeDivider.dataset.id === 'info' && newHeight <= 20) {
-                if (!activeDivider.classList.contains('collapsed')) {
-                    activeDivider.classList.add('collapsed');
-                    sectionAbove.style.display = 'none';
-                }
+            let newHeight = isAbove ? (startHeight + dy) : (startHeight - dy);
+            const maxAvailable = startHeight + startSpacerHeight - 10;
+
+            newHeight = Math.max(0, Math.min(newHeight, maxAvailable));
+            target.style.flex = `0 0 ${newHeight}px`;
+
+            if (newHeight <= 20) {
+                if (!activeDivider.classList.contains('collapsed')) collapseSection(activeDivider);
+            } else {
+                if (activeDivider.classList.contains('collapsed')) expandSection(activeDivider);
             }
         });
 
@@ -618,10 +542,21 @@
             if (activeDivider) activeDivider.style.cursor = 'grab';
         });
 
-        // Footer button actions
-        document.querySelector('.footer span[data-id="btn-filter"]').addEventListener('click', () => alert('Filter clicked'));
-        document.querySelector('.footer span[data-id="btn-light"]').addEventListener('click', () => document.body.classList.toggle('light-mode'));
-        document.querySelector('.footer span[data-id="btn-settings"]').addEventListener('click', () => alert('Settings clicked'));
+        // Setup & DOM Sync
+        const greetings = ["Welcome back", "Hello again", "Good to see you", "Greetings", "Salutations"];
+        $('.header > :nth-child(2)').textContent = greetings[Math.floor(Math.random() * greetings.length)];
+
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+        $('.header > :nth-child(3)').textContent = dateStr;
+        $('.header > :nth-child(4)').textContent = `Last updated: ${dateStr}`;
+
+        $$('.parent').forEach(p => p.dataset.collapsed = 'true');
+        updatePointer();
+
+        $('.footer span[data-id="btn-filter"]').addEventListener('click', () => alert('Filter clicked'));
+        $('.footer span[data-id="btn-light"]').addEventListener('click', () => document.body.classList.toggle('light-mode'));
+        $('.footer span[data-id="btn-settings"]').addEventListener('click', () => alert('Settings clicked'));
     </script>
 </body>
 </html>
