@@ -1,5 +1,6 @@
 // GLOBAL MOUSE SOUNDS
 document.addEventListener('pointerdown', function (e) {
+  if (jsLessActive) return;
   // icon selection logic
   const icon = e.target.closest('.desktop-icon');
   if (icon) {
@@ -18,6 +19,7 @@ document.addEventListener('pointerdown', function (e) {
 });
 
 document.addEventListener('pointerup', function (e) {
+  if (jsLessActive) return;
   const releaseSound = document.getElementById('release-sound');
   if (releaseSound) {
     releaseSound.currentTime = 0;
@@ -44,6 +46,17 @@ function removeEffectClass(cls) {
   });
 }
 
+// FILTER STACKING
+function addFilterEffect(cls) {
+  addEffectClass(cls);
+}
+
+function removeFilterEffect(cls) {
+  removeEffectClass(cls);
+}
+
+const FILTER_CLASSES = ['color-downgrade', 'monochrome', 'invert-effect'];
+
 radioButtons.forEach(radio => {
   radio.addEventListener('change', (event) => {
     if (!event.target.checked) return;
@@ -52,6 +65,7 @@ radioButtons.forEach(radio => {
     if (removeAttr) {
       removeAttr.split(/\s+/).forEach(cls => {
         if (cls === 'js-less') toggleJSLess(false);
+        else if (cls && FILTER_CLASSES.includes(cls)) removeFilterEffect(cls);
         else if (cls) removeEffectClass(cls);
       });
     }
@@ -59,6 +73,7 @@ radioButtons.forEach(radio => {
     const effectAttr = event.target.getAttribute('data-effect');
     if (effectAttr) {
       if (effectAttr === 'js-less') toggleJSLess(true);
+      else if (FILTER_CLASSES.includes(effectAttr)) addFilterEffect(effectAttr);
       else addEffectClass(effectAttr);
     }
   });
@@ -68,7 +83,6 @@ radioButtons.forEach(radio => {
 const keyboardMouse = {
   enabled: false,
   cursorEl: null,
-  warningEl: null,
   hideCursorStyleEl: null,
   rafId: null,
   x: 0,
@@ -86,6 +100,19 @@ const keyboardMouse = {
   dragStarted: false,
   dragKey: 'f'
 };
+
+function setMouseWarning(msg) {
+  const el = document.getElementById('mouse-warning');
+  if (!el) return;
+  if (!msg) {
+    el.textContent = '';
+    el.style.display = 'none';
+    return;
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.color = 'red';
+}
 
 const CURSOR_STATES = {
   normal: 'MEDIA/CNormal.cur',
@@ -113,13 +140,6 @@ function ensureKeyboardMouseElements() {
     container.appendChild(img);
     document.body.appendChild(container);
     keyboardMouse.cursorEl = container;
-  }
-  if (!keyboardMouse.warningEl) {
-    const warning = document.createElement('div');
-    warning.id = 'kb-warning';
-    warning.textContent = "Device 'device:mouse' conflicts with 'device:typing'!";
-    document.body.appendChild(warning);
-    keyboardMouse.warningEl = warning;
   }
   if (!keyboardMouse.blockerEl) {
     const blocker = document.createElement('div');
@@ -151,7 +171,7 @@ function enableKeyboardMouse() {
     keyboardMouse.y = Math.floor(window.innerHeight / 2);
   }
   keyboardMouse.cursorEl.style.display = 'block';
-  keyboardMouse.warningEl.style.display = 'block';
+  setMouseWarning("Device 'device:mouse' conflicts with 'device:typing'!");
   if (keyboardMouse.blockerEl) keyboardMouse.blockerEl.style.display = 'block';
   keyboardMouse.hideCursorStyleEl.textContent =
     '.kb-cursor-hidden, .kb-cursor-hidden * { cursor: none !important; }';
@@ -170,7 +190,7 @@ function disableKeyboardMouse() {
   if (keyboardMouse.dragKeyHeld) kbEndDrag();
   keyboardMouse.forcedState = null;
   if (keyboardMouse.cursorEl) keyboardMouse.cursorEl.style.display = 'none';
-  if (keyboardMouse.warningEl) keyboardMouse.warningEl.style.display = 'none';
+  setMouseWarning('');
   if (keyboardMouse.blockerEl) keyboardMouse.blockerEl.style.display = 'none';
   if (keyboardMouse.hideCursorStyleEl) keyboardMouse.hideCursorStyleEl.textContent = '';
   document.body.classList.remove('kb-cursor-hidden');
@@ -294,7 +314,7 @@ function startKeyboardMouseLoop() {
       keyboardMouse.y = Math.max(0, Math.min(window.innerHeight, keyboardMouse.y + dy));
       updateKeyboardMouseCursorPos();
     }
-    // Drag: dispatch pointermove on document while drag key is held
+    // Dispatch pointermove on document while drag key is held
     if (keyboardMouse.dragKeyHeld && keyboardMouse.dragStarted && (keyboardMouse.x !== prevX || keyboardMouse.y !== prevY)) {
       const moveEv = new PointerEvent('pointermove', {
         bubbles: true, cancelable: true,
@@ -411,7 +431,6 @@ window.addEventListener('keyup', function (e) {
   }
 });
 
-// ACCESSIBILITY JOKE EFFECTS
 let vgaEjected = false;
 let narratorEnabled = false;
 let narratorAudio = null;
@@ -434,10 +453,6 @@ function Blackscreen() {
     overlay = document.createElement('div');
     overlay.id = 'vga-overlay';
     overlay.innerHTML = '<span>NO SIGNAL</span>';
-    overlay.addEventListener('click', function () {
-      vgaEjected = false;
-      overlay.style.display = 'none';
-    });
     document.body.appendChild(overlay);
   }
   overlay.style.display = vgaEjected ? 'flex' : 'none';
@@ -450,8 +465,8 @@ function EnableNarrator() {
     narratorAudio = document.createElement('audio');
     narratorAudio.loop = true;
     narratorAudio.preload = 'auto';
-    // TODO: Replace with actual narrator voice file
-    // narratorAudio.src = 'MEDIA/narrator.wav';
+    // !! replace with link
+    narratorAudio.src = '../EXTERNAL/MEDIA/HELP/narrator.mp3';
     document.body.appendChild(narratorAudio);
   }
   narratorAudio.volume = globalVolume;
@@ -475,36 +490,15 @@ function EnableSticky() {
 function showStickyKeysDialog() {
   if (stickyKeysDialogShown) return;
   stickyKeysDialogShown = true;
-
-  let dialog = document.getElementById('sticky-keys-dialog');
-  if (!dialog) {
-    dialog = document.createElement('div');
-    dialog.className = 'window';
-    dialog.id = 'sticky-keys-dialog';
-    var cx = Math.floor((window.innerWidth - 350) / 2);
-    var cy = Math.floor((window.innerHeight - 200) / 2);
-    dialog.style.top = cy + 'px';
-    dialog.style.left = cx + 'px';
-    dialog.innerHTML =
-      '<div class="title-bar">' +
-        '<div class="title-bar-text">Sticky Keys</div>' +
-        '<div class="title-bar-controls">' +
-          '<button aria-label="Close" onclick="dismissStickyKeys()"></button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="window-body" style="padding: 15px; text-align: center;">' +
-        '<p>Sticky Keys lets you press one key at a time for keyboard shortcuts.</p>' +
-        '<p style="margin-top: 10px;">Do you want to turn on Sticky Keys?</p>' +
-        '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">' +
-          '<button onclick="activateStickyKeys()">Yes</button>' +
-          '<button onclick="dismissStickyKeys()">No</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(dialog);
-    dragElement(dialog);
+  var dialog = document.getElementById('sticky-keys-dialog');
+  if (dialog) {
+    if (!dialog.style.top) {
+      dialog.style.top = Math.floor((window.innerHeight - 200) / 2) + 'px';
+      dialog.style.left = Math.floor((window.innerWidth - 350) / 2) + 'px';
+    }
+    dialog.style.display = 'block';
+    dialog.style.zIndex = highestZIndex++;
   }
-  dialog.style.display = 'block';
-  dialog.style.zIndex = highestZIndex++;
 }
 
 function activateStickyKeys() {
@@ -515,8 +509,8 @@ function activateStickyKeys() {
   if (!stickyKeysSound) {
     stickyKeysSound = document.createElement('audio');
     stickyKeysSound.preload = 'auto';
-    // TODO: Replace with actual sticky keys sound file
-    // stickyKeysSound.src = 'MEDIA/sticky.wav';
+    // !! Replace with link
+    stickyKeysSound.src = '../EXTERNAL/MEDIA/HELP/splat.mp3';
     document.body.appendChild(stickyKeysSound);
   }
   stickyKeysSound.volume = globalVolume;
@@ -528,7 +522,7 @@ function dismissStickyKeys() {
   if (dialog) dialog.style.display = 'none';
 }
 
-// Track repeated key presses for Sticky Keys (any key triggers the dialog)
+// Track repeated key presses for Sticky Keys
 document.addEventListener('keydown', function (e) {
   if (jsLessActive) return;
   if (!e.repeat) {
@@ -574,9 +568,9 @@ function magnifierFollow(e) {
 function EnableHicon() {
   highContrastEnabled = !highContrastEnabled;
   if (highContrastEnabled) {
-    addEffectClass('high-contrast-effect');
+    addFilterEffect('high-contrast-effect');
   } else {
-    removeEffectClass('high-contrast-effect');
+    removeFilterEffect('high-contrast-effect');
   }
 }
 
@@ -584,9 +578,9 @@ function EnableHicon() {
 function EnableHibrig() {
   highBrightnessEnabled = !highBrightnessEnabled;
   if (highBrightnessEnabled) {
-    addEffectClass('high-brightness-effect');
+    addFilterEffect('high-brightness-effect');
   } else {
-    removeEffectClass('high-brightness-effect');
+    removeFilterEffect('high-brightness-effect');
   }
 }
 
@@ -594,9 +588,9 @@ function EnableHibrig() {
 function EnableBigtxt() {
   bigTextEnabled = !bigTextEnabled;
   if (bigTextEnabled) {
-    addEffectClass('big-text-effect');
+    addFilterEffect('big-text-effect');
   } else {
-    removeEffectClass('big-text-effect');
+    removeFilterEffect('big-text-effect');
   }
 }
 
@@ -633,42 +627,88 @@ function bigCursorFollow(e) {
   bigCursorEl.style.top = e.clientY + 'px';
 }
 
-// USER-PROVIDED CURSOR (Personalization → Cursor)
-// Reads the URL from #cursor-url and applies it as a CSS cursor with !important
-// so it overrides the default body cursor. Empty input resets to default.
-function changeCursor() {
-  const input = document.getElementById('cursor-url');
-  const url = input ? input.value.trim() : '';
+function setCursorWarning(msg, isError) {
+  const el = document.getElementById('cursor-warning');
+  if (!el) return;
+  if (!msg) {
+    el.textContent = '';
+    el.style.display = 'none';
+    return;
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.color = isError ? 'red' : '#006400';
+}
+
+function applyCursorStyle(url) {
   let style = document.getElementById('custom-cursor-style');
   if (!style) {
     style = document.createElement('style');
     style.id = 'custom-cursor-style';
     document.head.appendChild(style);
   }
-  if (url) {
-    // Escape backslash and double-quote so the cursor URL can't break out of the css url()
-    const safeUrl = url.replace(/[\\"]/g, '\\$&');
-    style.textContent =
-      'html, body, button, a, input, select, textarea, [role="tab"], ' +
-      '.desktop-icon, .title-bar { cursor: url("' + safeUrl + '"), auto !important; }';
-  } else {
-    style.textContent = '';
-  }
+  // Escape backslash, single-quote, and double-quote so the URL can't break out of url('…').
+  const safeUrl = url.replace(/[\\'"]/g, '\\$&');
+  style.textContent =
+    "html, body, button, a, input, select, textarea, [role=\"tab\"], " +
+    ".desktop-icon, .title-bar, .window, .window-body, .field-border, p, span " +
+    "{ cursor: url('" + safeUrl + "') 0 0, auto !important; }";
 }
 
-// MOUSE TRAIL (System → Mouse)
-// Draws a small fading circle under the cursor on every mousemove.
-// Clicking the button toggles the trail on/off.
-let mouseTrailActive = false;
-const TRAIL_COLORS = ['#ffffff', '#ff4040', '#ffff40', '#40ff40', '#40ffff', '#ff40ff'];
+function changeCursor() {
+  const input = document.getElementById('cursor-url');
+  const url = input ? input.value.trim() : '';
+  if (!url) {
+    const style = document.getElementById('custom-cursor-style');
+    if (style) style.textContent = '';
+    setCursorWarning('');
+    return;
+  }
+  // Pre-validate by trying to load the URL as an image. If it doesn't load,
+  const tester = new Image();
+  tester.onload = function () {
+    applyCursorStyle(url);
+    const w = tester.naturalWidth, h = tester.naturalHeight;
+    if (w > 128 || h > 128) {
+      setCursorWarning(
+        'Loaded (' + w + 'x' + h + '), but browsers limit cursor images to 128x128. ' +
+        'It may be silently ignored — try a smaller image.',
+        true
+      );
+    } else {
+      setCursorWarning('Cursor applied (' + w + 'x' + h + ').', false);
+    }
+  };
+  tester.onerror = function () {
+    const style = document.getElementById('custom-cursor-style');
+    if (style) style.textContent = '';
+    setCursorWarning(
+      'Could not load "' + url + '". ' +
+      'Check the URL, CORS, or use a .cur/.png/.svg under 128x128.',
+      true
+    );
+  };
+  tester.src = url;
+}
 
-function toggleMouseTrail() {
+// MOUSE TRAIL
+let mouseTrailActive = false;
+
+function getTrailCursorUrl() {
+  var style = document.getElementById('custom-cursor-style');
+  if (style && style.textContent) {
+    var m = style.textContent.match(/url\(["'](.+?)["']\)/);
+    if (m) return m[1];
+  }
+  return CURSOR_STATES.normal;
+}
+
+function Mousetrail() {
   mouseTrailActive = !mouseTrailActive;
   if (mouseTrailActive) {
     document.addEventListener('mousemove', addTrailDot);
   } else {
     document.removeEventListener('mousemove', addTrailDot);
-    // Clean up any dot that was still on-screen
     document.querySelectorAll('.mouse-trail-dot').forEach(function (d) { d.remove(); });
   }
 }
@@ -677,24 +717,19 @@ function addTrailDot(e) {
   if (!mouseTrailActive) return;
   if (jsLessActive) return;
   if (e.target && e.target.closest && e.target.closest('input, textarea, select, button')) return;
-  const dot = document.createElement('div');
+  var dot = document.createElement('div');
   dot.className = 'mouse-trail-dot';
   dot.style.left = e.clientX + 'px';
   dot.style.top = e.clientY + 'px';
-  const color = TRAIL_COLORS[Math.floor(Math.random() * TRAIL_COLORS.length)];
-  dot.style.background = color;
+  dot.style.backgroundImage = 'url("' + getTrailCursorUrl() + '")';
   document.body.appendChild(dot);
-  // Force layout so the transition animates from the initial state
   setTimeout(function () {
     dot.classList.add('trail-fade');
     setTimeout(function () { dot.remove(); }, 650);
   }, 30);
 }
 
-// JS-LESS (Personalization → Script)
-// Adds body.js-less class + a notice. CSS blocks pointer-events on
-// non-form elements so icons, windows and most buttons stop responding,
-// but the radios themselves stay clickable so the user can flip back.
+// JS-LESS
 let jsLessActive = false;
 
 function toggleJSLess(on) {
@@ -702,15 +737,6 @@ function toggleJSLess(on) {
   if (on) {
     document.body.classList.add('js-less');
     let notice = document.getElementById('js-less-readme');
-    if (!notice) {
-      notice = document.createElement('div');
-      notice.id = 'js-less-readme';
-      notice.innerHTML = '<strong>JS-less mode is on.</strong><br>' +
-        'Most interactions are disabled.<br>' +
-        'Use the <em>Script</em> fieldset radios to turn JavaScript back on.';
-      document.body.appendChild(notice);
-    }
-    notice.style.display = 'block';
   } else {
     document.body.classList.remove('js-less');
     const notice = document.getElementById('js-less-readme');
@@ -731,7 +757,7 @@ function bogolNext() {
 
   if (!stepBanner || !stepConfirm) return;
 
-  // Banner -> Confirmation step
+  // Confirmation step
   if (stepBanner.style.display !== 'none') {
     stepBanner.style.display = 'none';
     stepConfirm.style.display = 'block';
@@ -739,16 +765,13 @@ function bogolNext() {
     return;
   }
 
-  // Confirmation -> Start progress (only if not already running)
   if (progressBar && bogolProgressInterval === null) {
     nextBtn.disabled = true;
     backBtn.disabled = true;
-    // Hide the window's close (X) button so the compression cannot be cancelled
     if (bogolWindow) {
       const closeBtn = bogolWindow.querySelector('.title-bar-controls button[aria-label="Close"]');
       if (closeBtn) closeBtn.style.display = 'none';
     }
-    // Force the keyboard mouse cursor to show the wait state during compression
     keyboardMouse.forcedState = 'wait';
     bogolProgressInterval = setInterval(() => animateBogolProgress(progressBar), 120);
   }
@@ -760,7 +783,6 @@ function bogolBack() {
   const backBtn = document.getElementById('bogol-back-btn');
   const progressBar = document.getElementById('bogol-progress-bar');
 
-  // Disable during active progress
   if (bogolProgressInterval !== null) return;
   if (!stepBanner) return;
 
@@ -775,13 +797,13 @@ function animateBogolProgress(bar) {
   let increment;
 
   if (current < 70) {
-    // Fast phase: 5-15% per tick
+    // 5-15%
     increment = Math.random() * 10 + 5;
   } else if (current < 90) {
-    // Mid phase: 2-7% per tick (slowing down)
+    // 2-7%
     increment = Math.random() * 5 + 2;
   } else if (current < 99) {
-    // Near completion: 0.3-1.5% per tick (much slower)
+    // 0.3-1.5%
     increment = Math.random() * 1.2 + 0.3;
   } else {
     // Final push
@@ -797,7 +819,6 @@ function animateBogolProgress(bar) {
     setTimeout(() => {
       const bsod = document.getElementById('bsod-overlay');
       if (bsod) bsod.style.display = 'flex';
-      // Release the forced wait state on the keyboard mouse cursor
       keyboardMouse.forcedState = null;
     }, 400);
   }
@@ -824,7 +845,6 @@ function resetBogolWizard() {
   }
   if (nextBtn) nextBtn.disabled = false;
   if (progressBar) progressBar.style.width = '0%';
-  // Restore the close (X) button when the wizard resets
   if (bogolWindow) {
     const closeBtn = bogolWindow.querySelector('.title-bar-controls button[aria-label="Close"]');
     if (closeBtn) closeBtn.style.display = '';
@@ -843,12 +863,12 @@ function setGlobalVolume(value) {
   globalVolume = value / 100;
   document.getElementById('volume-label').textContent = value + '%';
 
-  // update all audio and video elements
+  // Update all audio and video elements
   document.querySelectorAll('audio, video').forEach(media => {
     media.volume = globalVolume;
   });
 
-  // keep narrator and sticky-keys audio in sync
+  // Keep narrator and sticky-keys audio in sync
   if (narratorAudio) narratorAudio.volume = globalVolume;
   if (stickyKeysSound) stickyKeysSound.volume = globalVolume;
 }
@@ -934,7 +954,7 @@ function openWindow(windowId) {
       }
     }
 
-    // infinite scroll for trash
+    // Infinite scroll init
     if (windowId === 'trash-window') {
       initializeTrash();
     }
@@ -1075,7 +1095,6 @@ function loadMedia() {
   const container = document.getElementById('media-container');
   container.innerHTML = '';
 
-  // detect media type
   const ext = url.split('.').pop().toLowerCase().split('?')[0];
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
   const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac'];
@@ -1096,7 +1115,7 @@ function loadMedia() {
     container.innerHTML += '<p style="color: #0f0;">♪ Audio loaded ♪</p>';
     currentMedia = audio;
   } else {
-    // assume video for unknown
+    // Assume video for unknown
     const video = document.createElement('video');
     video.src = url;
     video.controls = false;
@@ -1176,7 +1195,7 @@ function initializeTrash() {
     container.appendChild(createTrashFile());
   }
 
-  // infinite scroll
+  // Infinite scroll
   container.addEventListener('scroll', function () {
     if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
       for (let i = 0; i < 10; i++) {
@@ -1228,21 +1247,18 @@ let virusEffectActive = false;
 let activeIntervals = []; // Store intervals for effects that need continuous logic (like flying windows)
 
 function executeVirus() {
-  if (virusEffectActive) return; // Already running
+  if (virusEffectActive) return;
   virusEffectActive = true;
 
   // Start the infinite loop of chaos
   startVirusLoop();
 
-  // Schedule the removal question
   scheduleRemovalDialog(10000);
 }
 
 function startVirusLoop() {
-  // Trigger an initial effect immediately
   randomVirusEffect();
 
-  // Then cycle effects endlessly
   virusInterval = setInterval(randomVirusEffect, 2000);
 }
 
@@ -1258,13 +1274,20 @@ function randomVirusEffect() {
     blurScreen,
     monochrome,
     unrecognizable,
+    EnableHicon,
+    EnableHibrig,
+    EnableBigtxt,
+    EnableBigcur,
+    EnableNarrator,
+    EnableZoom,
+    EnableSticky,
     // overlay effects - lower chance?
     ransomware,
     rickroll,
+    Blackscreen,
     persistentBSOD
   ];
 
-  // Weighting: make BSOD and Overlays rarer
   let selectedEffect;
   const r = Math.random();
   if (r < 0.05) {
@@ -1274,8 +1297,8 @@ function randomVirusEffect() {
   } else if (r < 0.15) {
     selectedEffect = rickroll;
   } else {
-    // filter out overlays from main pool
-    const safeEffects = effects.filter(e => e !== persistentBSOD && e !== ransomware && e !== rickroll);
+    // Filter out overlays from main pool
+    const safeEffects = effects.filter(e => e !== persistentBSOD && e !== ransomware && e !== rickroll && e !== Blackscreen);
     selectedEffect = safeEffects[Math.floor(Math.random() * safeEffects.length)];
   }
 
@@ -1287,7 +1310,7 @@ function scheduleRemovalDialog(delay) {
   virusTimeout = setTimeout(() => {
     const dialog = document.getElementById('virus-remove-dialog');
     dialog.style.display = 'block';
-    dialog.style.zIndex = 20000; // Ensure specifically above everything else
+    dialog.style.zIndex = 20000; // !! above everything else
   }, delay);
 }
 
@@ -1298,23 +1321,24 @@ function removeVirus() {
 
   document.getElementById('virus-remove-dialog').style.display = 'none';
 
-  // Clean up DOM - remove all possible virus classes from all targets
-  const possibleClasses = ['shake-effect', 'invert-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less', 'color-downgrade', 'blurry', 'monochrome', 'unrecognizable', 'high-contrast-effect', 'high-brightness-effect', 'big-text-effect'];
-  possibleClasses.forEach(cls => removeEffectClass(cls));
+  // Clean up DOM
+  const effectClasses = ['shake-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less', 'unrecognizable'];
+  effectClasses.forEach(cls => removeEffectClass(cls));
+  const filterClasses = ['invert-effect', 'color-downgrade', 'blurry', 'monochrome'];
+  filterClasses.forEach(cls => removeFilterEffect(cls));
 
   // Clean up Overlays
   document.getElementById('bsod-overlay').style.display = 'none';
   document.getElementById('ransomware-overlay').style.display = 'none';
   document.getElementById('rickroll-overlay').style.display = 'none';
-  // Cancel any pending BSOD retry timeout and hide the black-screen flash
-  // so the BSOD can't reappear after the system was just "restored"
   if (typeof bsodRetryTimeout !== 'undefined' && bsodRetryTimeout !== null) {
     clearTimeout(bsodRetryTimeout);
     bsodRetryTimeout = null;
   }
   const blackOverlay = document.getElementById('black-overlay');
   if (blackOverlay) blackOverlay.style.display = 'none';
-  // stop youtube video
+
+  // Stop youtube video
   const iframe = document.querySelector('#rickroll-overlay iframe');
   const tempSrc = iframe.src;
   iframe.src = '';
@@ -1329,6 +1353,10 @@ function removeVirus() {
   if (customCursorStyle) customCursorStyle.textContent = '';
   const cursorInput = document.getElementById('cursor-url');
   if (cursorInput) cursorInput.value = '';
+
+  // Clear in-Settings warning lines so a previous error doesn't linger
+  setCursorWarning('');
+  setMouseWarning('');
 
   // Clean up mouse trail (state reset, not toggle, so a desync can't flip it back on)
   if (mouseTrailActive) {
@@ -1351,15 +1379,14 @@ function removeVirus() {
   if (narratorEnabled) { EnableNarrator(); }
   if (magnifierEnabled) { EnableZoom(); }
   if (bigCursorEnabled) { EnableBigcur(); }
-  highContrastEnabled = false;
-  highBrightnessEnabled = false;
-  bigTextEnabled = false;
+  if (highContrastEnabled) { EnableHicon(); }
+  if (highBrightnessEnabled) { EnableHibrig(); }
+  if (bigTextEnabled) { EnableBigtxt(); }
   stickyKeysEnabled = false;
 
   // Reset windows positions
   document.querySelectorAll('.window').forEach(win => {
     // rough reset, or just leave them where they landed
-    // win.style.top = '100px'; win.style.left = '100px'; // maybe too aggressive
   });
 
   alert("System restored.");
@@ -1371,14 +1398,11 @@ function removeEffect(effect) {
 
 function keepVirus() {
   document.getElementById('virus-remove-dialog').style.display = 'none';
-  scheduleRemovalDialog(30000); // Ask again in 30 seconds
+  scheduleRemovalDialog(30000);
 }
-
-// Effect Functions - Now Permanent by default (no setTimeout removal)
 
 function shakeScreen() {
   removeEffectClass('shake-effect');
-  // force reflow on all targets so animation restarts
   EFFECT_TARGETS.forEach(id => {
     const el = document.getElementById(id);
     if (el) void el.offsetWidth;
@@ -1387,12 +1411,11 @@ function shakeScreen() {
 }
 
 function invertColors() {
-  addEffectClass('invert-effect');
+  addFilterEffect('invert-effect');
 }
 
 function barrelRoll() {
   removeEffectClass('barrel-roll');
-  // force reflow on all targets so animation restarts
   EFFECT_TARGETS.forEach(id => {
     const el = document.getElementById(id);
     if (el) void el.offsetWidth;
@@ -1402,7 +1425,6 @@ function barrelRoll() {
 
 function hueSpin() {
   removeEffectClass('hue-spin');
-  // force reflow on all targets so animation restarts
   EFFECT_TARGETS.forEach(id => {
     const el = document.getElementById(id);
     if (el) void el.offsetWidth;
@@ -1415,15 +1437,15 @@ function cssLess() {
 }
 
 function colorDowngrade() {
-  addEffectClass('color-downgrade');
+  addFilterEffect('color-downgrade');
 }
 
 function blurScreen() {
-  addEffectClass('blurry');
+  addFilterEffect('blurry');
 }
 
 function monochrome() {
-  addEffectClass('monochrome');
+  addFilterEffect('monochrome');
 }
 
 function unrecognizable() {
@@ -1434,8 +1456,6 @@ function flyingWindows() {
   const windows = document.querySelectorAll('#desktop-wrapper .window');
   windows.forEach(win => {
     if (win.style.display !== 'none') {
-      // const startTop = parseInt(win.style.top) || 100; // not needed if we don't reset automatically
-      // const startLeft = parseInt(win.style.left) || 100;
       let angle = Math.random() * Math.PI * 2;
       let speed = 5;
 
@@ -1452,7 +1472,6 @@ function flyingWindows() {
 
       const interval = setInterval(animate, 50);
       activeIntervals.push(interval);
-      // Removed the setTimeout that clears it
     }
   });
 }
@@ -1460,19 +1479,14 @@ function flyingWindows() {
 function persistentBSOD() {
   const bsod = document.getElementById('bsod-overlay');
   bsod.style.display = 'flex';
-  // BSOD needs to be "impossible to exit".
-  // We'll handle the 'click' and 'keydown' at global level or on the element events.
 }
 
 let bsodRetryTimeout = null;
 
 function closeBSOD() {
-  // User: "Each time you do, the screen goes black and the BSOD reappears again."
-  // Flash a full-screen black overlay, wait, then re-show the BSOD.
   const bsod = document.getElementById('bsod-overlay');
   const black = document.getElementById('black-overlay');
   if (!bsod) return;
-  // Cancel any in-flight retry so mash-clicks don't stack timeouts
   if (bsodRetryTimeout !== null) {
     clearTimeout(bsodRetryTimeout);
     bsodRetryTimeout = null;
@@ -1494,16 +1508,10 @@ function rickroll() {
   document.getElementById('rickroll-overlay').style.display = 'block';
 }
 
-// Keep multipleAlerts same but rare
-function multipleAlerts() {
-  // alert("System Error"); // Still annoying to debug with, keeping disabled or rare
-}
-
-// Capture Keys for BSOD persistence
 document.addEventListener('keydown', function (e) {
   if (jsLessActive) return;
   if (document.getElementById('bsod-overlay').style.display === 'flex') {
-    closeBSOD(); // Trigger the fake close loops
+    closeBSOD();
     e.preventDefault();
     e.stopPropagation();
   }
@@ -1536,7 +1544,6 @@ function browserRefresh() {
 }
 
 function browserBack() {
-  // can't actually go back in iframe history from parent, but ig i can try
   try {
     document.getElementById('browser-iframe').contentWindow.history.back();
   } catch (e) {

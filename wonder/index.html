@@ -292,14 +292,14 @@
 
   <script src="https://unpkg.com/lunr/lunr.js"></script>
   <script>
-    // information panels
+    // Information panels
     function showInformation(type) {
       document.querySelectorAll('.information').forEach(el => el.style.display = 'none');
       const target = document.getElementById(type);
       target.style.display = target.style.display === 'block' ? 'none' : 'block';
     }
 
-    // theme toggle
+    // Theme toggle
     const toggle = document.getElementById('modeToggle');
     toggle.addEventListener('click', () => {
       const isDark = document.body.hasAttribute('data-theme');
@@ -316,20 +316,20 @@
       document.body.setAttribute('data-theme', 'dark');
     }
 
-    // search function
+    // Search function
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
     const luckyBtn = document.getElementById('luckyBtn');
     const getAllBtn = document.getElementById('getAllBtn');
 
-    // cache the search index for the lucky button
+    // Cache the search index for the lucky button
     let cachedPages = null;
     fetch('search-index.json')
       .then(res => res.json())
       .then(pages => { cachedPages = pages; })
       .catch(() => { });
 
-    // search
+    // Search
     function doSearch() {
       const q = searchInput.value.trim();
       if (q) {
@@ -341,7 +341,7 @@
       if (e.key === 'Enter') doSearch();
     });
 
-    // boingboing
+    // Boingboing
     function wonderEasterEgg() {
 
       if (document.getElementById('dvd-overlay')) return;
@@ -354,7 +354,6 @@
         'MEDIA/er.svg',
       ];
 
-      // overlay
       const overlay = document.createElement('div');
       overlay.id = 'dvd-overlay';
       Object.assign(overlay.style, {
@@ -388,7 +387,7 @@
           });
           overlay.appendChild(img);
 
-          // random position, random speed, random direction
+          // Random position, random speed, random direction, fade in
           let x = Math.random() * (W() - IMG_W);
           let y = Math.random() * (H() - IMG_H);
           let dx = (2 + Math.random() * 2) * (Math.random() < 0.5 ? 1 : -1);
@@ -397,7 +396,6 @@
           img.style.left = x + 'px';
           img.style.top = y + 'px';
 
-          // fade in
           requestAnimationFrame(() => {
             requestAnimationFrame(() => { img.style.opacity = '1'; });
           });
@@ -430,14 +428,14 @@
         wonderEasterEgg();
         return;
       }
-      // i'm feelin' lucky!!!
+      // I'm feelin' lucky!!!
       if (cachedPages && cachedPages.length > 0) {
         const randomPage = cachedPages[Math.floor(Math.random() * cachedPages.length)];
         window.location.href = randomPage.url;
       }
     });
 
-    // show all pages for "get me everything"
+    // Show all pages for "get me everything"
     getAllBtn.addEventListener('click', () => {
       window.location.href = 'search/?q=*';
     });

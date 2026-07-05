@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html> <!-- friendly reminder: replace all example.com -->
+<html> <!-- friendly reminder: replace all placeholder -->
 
 <head>
   <meta charset="UTF-8">
@@ -462,10 +462,10 @@
               <legend>Cursor</legend>
               <div class="field-row">
                 <label for="cursor-url">Paste cursor URL:</label>
-                <input id="cursor-url" type="text" style="width: 150px;" placeholder="Leave blank to reset">
+                <input id="cursor-url" type="text" style="width: 150px;">
                 <button onclick="changeCursor()">Submit</button>
               </div>
-              <p style="font-size: 10px; margin: 4px 0 0 0; color: #555;">Tip: works with .cur, .png, .svg or any image. Blank = reset.</p>
+              <p id="cursor-warning" style="margin-top: 4px; margin-bottom: 3px; color: red; display: none;"></p>
             </fieldset>
             <fieldset>
               <legend>Font</legend>
@@ -546,12 +546,13 @@
             </fieldset>
             <fieldset>
               <legend>Mouse</legend>
-              <button onclick="toggleMouseTrail()" id="settings-button">Mouse trail</button>
+              <button onclick="Mousetrail()" id="settings-button">Mouse trail</button>
               <p>Choose your mouse device:</p>
               <select id="mouse-device-select" onchange="setMouseDevice(this.value)">
                 <option value="mouse">Compliant and submissive mouse</option>
                 <option value="keyboard">Inconvenient keyboard.</option>
               </select>
+              <p id="mouse-warning" style="margin-top: 4px; margin-bottom: 3px; color: red; display: none;"></p>
             </fieldset>
             <fieldset>
               <legend>Other Hardwares</legend>
@@ -576,7 +577,25 @@
       </div>
     </div>
 
-  </div> <!-- closing desktop-wrapper -->
+    <!-- sticky keys dialog -->
+    <div class="window" style="position: fixed !important; display: none; width: 350px; z-index: 25000;" id="sticky-keys-dialog">
+      <div class="title-bar">
+        <div class="title-bar-text">Sticky Keys</div>
+        <div class="title-bar-controls">
+          <button aria-label="Close" onclick="dismissStickyKeys()"></button>
+        </div>
+      </div>
+      <div class="window-body" style="padding: 15px; text-align: center;">
+        <p>Sticky Keys lets you press one key at a time for keyboard shortcuts.</p>
+        <p style="margin-top: 10px;">Do you want to turn on Sticky Keys?</p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+          <button onclick="activateStickyKeys()">Yes</button>
+          <button onclick="dismissStickyKeys()">No</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <!-- start menu -->
   <div id="start-menu">
@@ -674,7 +693,7 @@
     </div>
   </div>
 
-  <!-- black screen overlay (BSOD flash between retries) -->
+  <!-- (BSOD flash between retries) -->
   <div id="black-overlay"></div>
 
   <!-- bsod overlay for virus -->

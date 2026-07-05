@@ -1,14 +1,14 @@
-/* global styles */
+/* Global styles */
 /* (friendly reminder: make it mobile compatible) */
 
-/* fallback style */
+/* Fallback style */
 body {
   background-color: rgb(255, 255, 255);
   color: black;
   font-family: Verdana;
 }
 
-/* fonts */
+/* Fonts */
 @font-face {
   font-family: 'stat ft';
   src: url(../LOCAL/FONTS/stat_ft.ttf);

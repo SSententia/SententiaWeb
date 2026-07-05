@@ -1,3 +1,15 @@
+#desktop-wrapper,
+#taskbar,
+#start-menu {
+    filter:
+        var(--fx-contrast, )
+        var(--fx-brightness, )
+        var(--fx-color-downgrade, )
+        var(--fx-monochrome, )
+        var(--fx-invert, )
+        var(--fx-blur, );
+}
+
 #desktop-wrapper {
     width: 100vw;
     height: 100vh;
@@ -353,7 +365,6 @@ h1 {
     background: white;
 }
 
-/* virus effects */
 @keyframes shake {
 
     0%,
@@ -414,7 +425,7 @@ h1 {
 }
 
 .invert-effect {
-    filter: invert(1);
+    --fx-invert: invert(1);
 }
 
 #bsod-overlay {
@@ -443,7 +454,6 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* mobile adjustments */
 @media (max-width: 600px) {
     #desktop {
         grid-template-columns: repeat(auto-fill, 70px);
@@ -455,7 +465,6 @@ h1 {
     }
 }
 
-/* New Virus Effects */
 @keyframes barrel-roll {
     from {
         transform: rotate(0deg);
@@ -508,7 +517,6 @@ h1 {
     cursor: pointer !important;
 }
 
-/* Keep desktop icon grid intact during css-less */
 .css-less #desktop {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, 80px) !important;
@@ -518,23 +526,20 @@ h1 {
 }
 
 .color-downgrade {
-    filter: contrast(300%) saturate(0.15) brightness(0.85);
-    /* Aggressive posterization for that 4-bit feel */
+    --fx-color-downgrade: contrast(300%) saturate(0.15) brightness(0.85);
 }
 
 .blurry {
-    filter: blur(4px);
+    --fx-blur: blur(4px);
 }
 
 .monochrome {
-    filter: grayscale(100%) contrast(200%);
+    --fx-monochrome: grayscale(100%) contrast(200%);
 }
 
 @font-face {
     font-family: 'Wingdings';
     src: local('Wingdings'), local('Webdings');
-    /* Fallback to standard symbols if local font not present - unlikely to work perfectly x-browser without file, 
-        so we'll use a generic cursive or fantasy for "unrecognizable" or just random transforms */
 }
 
 .unrecognizable {
@@ -593,7 +598,6 @@ h1 {
     gap: 8px;
 }
 
-/* KEYBOARD CONTROLLED MOUSE POINTER */
 #kb-mouse-blocker {
     position: fixed;
     top: 0;
@@ -641,27 +645,6 @@ body {
     cursor: none !important;
 }
 
-#kb-warning {
-    position: fixed;
-    bottom: 34px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ffffe1;
-    color: black;
-    padding: 4px 10px;
-    font-family: "MS Sans Serif", "Dot", sans-serif;
-    font-size: 11px;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #000;
-    z-index: 999998;
-    pointer-events: none;
-    display: none;
-    white-space: nowrap;
-}
-
-/* ACCESSIBILITY JOKE EFFECTS */
-
-/* VGA Eject */
 #vga-overlay {
     position: fixed;
     top: 0;
@@ -688,24 +671,20 @@ body {
     50% { opacity: 0.3; }
 }
 
-/* High Contrast */
 .high-contrast-effect {
-    filter: contrast(500%) saturate(0) !important;
+    --fx-contrast: contrast(1000%);
 }
 
-/* High Brightness */
 .high-brightness-effect {
-    filter: brightness(3) !important;
+    --fx-brightness: brightness(3);
 }
 
-/* BIG TEXT */
 .big-text-effect,
 .big-text-effect * {
     font-size: 2.5rem !important;
     line-height: 1.2 !important;
 }
 
-/* BIG CURSOR */
 .big-cursor-overlay {
     position: fixed;
     pointer-events: none;
@@ -740,25 +719,22 @@ body {
     cursor: none !important;
 }
 
-/* Sticky Keys Dialog */
 #sticky-keys-dialog {
     position: fixed !important;
     z-index: 25000 !important;
     width: 350px;
 }
 
-/* MOUSE TRAIL */
 .mouse-trail-dot {
     position: fixed;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+    width: 16px;
+    height: 16px;
     pointer-events: none;
-    background: white;
-    border: 1px solid #888;
+    background-size: contain;
+    background-repeat: no-repeat;
     z-index: 999990;
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    opacity: 1;
+    opacity: 0.6;
     transform: scale(1);
 }
 .mouse-trail-dot.trail-fade {
@@ -766,7 +742,6 @@ body {
     transform: scale(0.3);
 }
 
-/* JS-LESS (kills interactivity; radios / inputs remain usable so you can toggle back) */
 .js-less button,
 .js-less .desktop-icon,
 .js-less .title-bar,
@@ -776,8 +751,6 @@ body {
 .js-less #taskbar,
 .js-less #start-menu {
     cursor: not-allowed !important;
-    opacity: 0.55;
-    filter: grayscale(70%);
 }
 .js-less,
 .js-less *:not(input):not(textarea):not(select):not(label) {

@@ -1,236 +1,627 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Blog</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100..700&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/x-icon" href="../LOCAL/MEDIA/Notfound.ico" />
-  <style>
-    :root {
-      --bg-color: #0e0e0e;
-      --text-color: #e0e0e0;
-      --sidebar-bg: #121212;
-      --link-color: #b8b8b8;
-      --link-hover-bg: rgba(255, 255, 255, 0.05);
-      --brand-color: #fff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sententia's Blog Area</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: "DM Mono", monospace;
+            margin: 0;
+            padding: 25px 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-    [data-theme="light"] {
-      --bg-color: #f8f8f8;
-      --text-color: #111;
-      --sidebar-bg: #ffffff;
-      --link-color: #333;
-      --link-hover-bg: rgba(0, 0, 0, 0.05);
-      --brand-color: #111;
-    }
+        body.light-mode {
+            background-color: #f0f0f0;
+            color: #000;
+        }
 
-    body {
-      font-family: "Roboto Mono", monospace;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
-      transition: background 0.35s ease, color 0.35s ease;
-    }
+        body.light-mode .divider .line {
+            background-color: #000;
+        }
 
-    h1 {
-      font-weight: 500;
-      font-size: 1.5rem;
-    }
+        body.light-mode .divider .diamond {
+            color: #000;
+        }
 
-    .hl {
-      border: dotted;
-      border-top: 3px solid #333;
-      border-left: none;
-      border-right: none;
-      color: #333;
-      overflow: visible;
-      text-align: right;
-      margin-right: 0;
-      height: 5px;
-      width: 100%;
-      position: relative;
-    }
+        .header-section {
+            flex: 0 0 auto;
+        }
 
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto auto 1fr;
+            gap: 20px;
+            align-items: center;
+            padding-bottom: 5px;
+        }
 
-    .hl::after {
-      background: var(--bg-color);
-      content: "<o>";
-      padding: 0 4px;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: -9px;
-      transition: background 0.35s ease, color 0.35s ease;
-    }
+        .header > :nth-child(1) { text-align: left; }
+        .header > :nth-child(2) { text-align: right; padding-right: 15px; }
+        .header > :nth-child(3) { text-align: left; padding-left: 15px; }
+        .header > :nth-child(4) { text-align: right; }
 
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      background-color: var(--sidebar-bg);
-      overflow-x: hidden;
-      transition: width 0.35s ease;
-      padding-top: 60px;
-    }
+        .content-section {
+            overflow-y: auto;
+            min-height: 20px;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .sidebar::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 12px;
-      background-color: var(--text-color);
-      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Ctext x='15' y='22' font-family='monospace' font-size='50' text-anchor='middle' fill='black' transform='rotate(90 15 22)'%3E=%3C/text%3E%3C/svg%3E");
-      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30' width='12' height='12'%3E%3Cg transform='rotate(90 20 20)'%3E%3Ctext x='20' y='28' font-family='monospace' font-size='50' text-anchor='middle' fill='black'%3E=%3C/text%3E%3C/g%3E%3C/svg%3E");
-      -webkit-mask-repeat: repeat-y;
-      mask-repeat: repeat-y;
-      pointer-events: none;
-    }
+        /* Small scrollbar that appears on hover */
+        .content-section::-webkit-scrollbar {
+            width: 6px;
+        }
+        .content-section::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .content-section::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 3px;
+        }
+        .content-section:hover::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+        body.light-mode .content-section:hover::-webkit-scrollbar-thumb {
+            background: #ccc;
+        }
 
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            cursor: grab;
+            user-select: none;
+            flex: 0 0 auto;
+        }
 
-    .sidebar-header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      border-bottom: double;
-      background: rgba(255, 255, 255, 0);
-    }
+        .divider:active {
+            cursor: grabbing;
+        }
 
-    .brand {
-      font-weight: 100;
-      color: var(--brand-color);
-      letter-spacing: 0.5px;
-    }
+        .divider .line {
+            flex-grow: 1;
+            height: 1px;
+            background-color: white;
+            transition: background-color 0.3s;
+        }
 
-    .sidebar-links {
-      padding-top: 10px;
-    }
+        .divider .diamond {
+            padding: 0 10px;
+            color: white;
+            font-size: 20px;
+            line-height: 1;
+            transition: background-color 0.2s, color 0.3s;
+            white-space: nowrap;
+        }
 
-    .sidebar a {
-      display: block;
-      padding: 12px 20px;
-      text-decoration: none;
-      font-size: 18px;
-      color: var(--link-color);
-      transition: color 0.35s, background-color 0.35s, border-left-color 0.35s;
-      border-left: 3px solid transparent;
-    }
+        .divider.yellow-line .line {
+            background-color: #FFFF66;
+        }
 
-    .sidebar a:hover {
-      color: var(--text-color);
-      background-color: var(--link-hover-bg);
-      border-left-color: #66ccff;
-    }
+        .divider.yellow-line .diamond {
+            color: #FFFF66;
+        }
 
-    .closebtn {
-      font-size: 32px;
-      color: #9e9e9e;
-      cursor: pointer;
-    }
+        .divider.cyan-line .line {
+            background-color: #66FFFF;
+        }
 
-    .openbtn {
-      position: fixed;
-      margin-top: 27px;
-      margin-left: -35px;
-      z-index: 1000;
-      font-size: 18px;
-      cursor: pointer;
-      background: #111;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 8px;
-    }
+        .divider.cyan-line .diamond {
+            color: #66FFFF;
+        }
 
-    .openbtn:hover {
-      background-color: #1a1a1a;
-    }
+        .divider.collapsed .line {
+            display: none;
+        }
 
-    .mode-toggle {
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      color: var(--brand-color);
-      font-size: 1.2rem;
-      transition: color 0.35s ease;
-    }
+        .divider.collapsed {
+            justify-content: center;
+        }
 
-    #main {
-      transition: margin-left 0.35s ease;
-      padding: 20px;
-    }
-  </style>
+        main {
+            padding: 20px 0;
+        }
+
+        pre {
+            font-family: inherit;
+            font-size: 16px;
+            margin: 0;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entry {
+            display: block;
+            cursor: pointer;
+        }
+
+        .pointer {
+            margin-right: 5px;
+        }
+
+        .c-yellow { color: #FFFF66; }
+        .c-blue   { color: #6699FF; }
+        .c-red    { color: #FF6666; }
+
+        .spacer {
+            flex-grow: 1;
+        }
+
+        #info-content {
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        #extra-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 35px;
+            padding-top: 15px;
+            margin-top: auto;
+        }
+
+        .footer span {
+            cursor: pointer;
+        }
+
+        .footer span.selected {
+            background-color: white;
+            color: black;
+        }
+
+        body.light-mode .footer span.selected {
+            background-color: black;
+            color: white;
+        }
+    </style>
 </head>
-
 <body>
-  <button class="openbtn" onclick="openNav()">&#9776;</button>
-
-  <nav id="Sidebar" class="sidebar">
-    <div class="sidebar-header">
-      <span class="brand" white-space: nowrap; flex-shrink: 0; width: auto; display: inline-block; word-break: normal;
-        overflow-wrap: normal;>://SSententia</span>
-      <button class="mode-toggle" id="modeToggle">🌓</button>
-      <span class="closebtn" onclick="closeNav()">&times;</span>
+    <!--TOP SECTION-->
+    <div class="header-section">
+        <div class="header">
+            <div>Sententia's Blog Area</div>
+            <div>Welcome back</div>
+            <div>2026.01.07</div>
+            <div>Last updated: 2026.01.07</div>
+        </div>
     </div>
-    <div class="sidebar-links">
-      <a href="#">About</a>
-      <a href="#">Services</a>
-      <a href="#">Clients</a>
-      <a href="#">Contact</a>
+
+    <div class="divider" data-id="top">
+        <div class="line"></div>
+        <div class="diamond">◇</div>
+        <div class="line"></div>
     </div>
-  </nav>
 
-  <main id="main">
-    <h1>SENTENTIA'S SIMPLISTIC BLOG POST</h1>
-    <hr class="hl" />
-    <p>Welcome to the minimalist blog template. Toggle between light and dark modes using the sidebar button!</p>
-  </main>
+    <!--MAIN SECTION-->
+    <div class="content-section" id="blog-section">
+        <main>
+<pre>
+<div class="entry item" data-id="url">  Sententia://blog.site </div>
+<div class="entry empty">&nbsp;</div>
+<div class="entry item blog" data-id="b1">  <span class="c-yellow">|</span> An Introduction: Blogs!</div>
+<div class="entry item blog" data-id="b2">  <span class="c-blue">|</span> Why Casualties:Unknown is Goated</div>
+<div class="entry item blog parent" data-id="b3">  <span class="c-blue">|</span> Something Something Test Juej</div>
+<div class="entry item blog child" data-parent="b3" data-id="b4" style="display: none;">  <span class="c-blue">└|</span> Something Test Juej Chapter Two (better)</div>
+<div class="entry item blog child" data-parent="b3" data-id="b5" style="display: none;">   <span class="c-blue">└|</span> Juej Chapter Three (even better)</div>
+<div class="entry item blog" data-id="b6">  <span class="c-red">|</span> Important Idk</div>
+</pre>
+        </main>
+    </div>
 
-  <script>
-    function openNav() {
-      document.getElementById("Sidebar").style.width = "250px";
-      document.getElementById("main").style.marginLeft = "250px";
-    }
+    <div class="divider" data-id="middle">
+        <div class="line"></div>
+        <div class="diamond">◇</div>
+        <div class="line"></div>
+    </div>
 
-    function closeNav() {
-      document.getElementById("Sidebar").style.width = "0";
-      document.getElementById("main").style.marginLeft = "0";
-    }
+    <div class="content-section" id="spacer-section">
+        <div class="spacer"></div>
+    </div>
 
-    // Theme toggle
-    const toggle = document.getElementById('modeToggle');
-    toggle.addEventListener('click', () => {
-      const body = document.body;
-      const currentTheme = body.getAttribute('data-theme');
-      if (currentTheme === 'light') {
-        body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        body.setAttribute('data-theme', 'light');
-        localStorage.setItem('theme', 'light');
-      }
-    });
+    <!--INFO SECTION-->
+    <div class="divider cyan-line" data-id="info">
+        <div class="line"></div>
+        <div class="diamond">◇</div>
+        <div class="line"></div>
+    </div>
+    <div class="content-section" id="info-section">
+        <div id="info-content">Select a blog post to see detailed info.</div>
+    </div>
 
-    // Load saved theme
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
-      document.body.setAttribute('data-theme', 'light');
-    }
-  </script>
+    <!--EXTRA SECTION-->
+    <div class="divider yellow-line" data-id="extra">
+        <div class="line"></div>
+        <div class="diamond">◇</div>
+        <div class="line"></div>
+    </div>
+    <div class="content-section" id="extra-section">
+        <div id="extra-content">
+            <div class="footer">
+                <span data-id="btn-filter">[ Filter ]</span>
+                <span data-id="btn-light">[ Light Mode ]</span>
+                <span data-id="btn-settings">[ Settings ]</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Random greeting
+        const greetings = ["Welcome back", "Hello again", "Good to see you", "Greetings", "Salutations"];
+        document.querySelector('.header > :nth-child(2)').textContent = greetings[Math.floor(Math.random() * greetings.length)];
+
+        // Date formatting
+        const today = new Date();
+        const dateStr = today.getFullYear() + '.' + String(today.getMonth() + 1).padStart(2, '0') + '.' + String(today.getDate()).padStart(2, '0');
+        document.querySelector('.header > :nth-child(3)').textContent = dateStr;
+        document.querySelector('.header > :nth-child(4)').textContent = 'Last updated: ' + dateStr;
+
+        // Blog post info data
+        const postInfo = {
+            'url': 'The root of the blog. Welcome!',
+            'b1': 'An introduction to what this blog is about.',
+            'b2': 'A deep dive into why Casualties:Unknown is goated.',
+            'b3': 'Parent post for the Juej series.',
+            'b4': 'Chapter two of the Juej series, which is better.',
+            'b5': 'Chapter three of the Juej series, even better.',
+            'b6': 'Something important, we just don\'t know what.'
+        };
+
+        // Parse indentation from first text node of each entry
+        document.querySelectorAll('.entry').forEach(el => {
+            const textNode = el.firstChild;
+            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                const match = textNode.textContent.match(/^( +)/);
+                if (match) {
+                    el.dataset.indent = match[1].length;
+                }
+            }
+        });
+
+        let navigable = Array.from(document.querySelectorAll('.entry.item, .divider, .footer span'));
+        let pointerIdx = navigable.findIndex(el => el.dataset.id === 'url');
+        if (pointerIdx === -1) pointerIdx = 0;
+        let selectedDivider = null;
+
+        function updateInfo(active) {
+            if (!active) return;
+            const id = active.dataset.id;
+            const infoEl = document.getElementById('info-content');
+            
+            if (active.classList.contains('divider')) {
+                if (id === 'info') infoEl.textContent = 'Cyan Divider: Controls the Info section height.';
+                else if (id === 'extra') infoEl.textContent = 'Yellow Divider: Controls the Extra section height.';
+                else if (id === 'top') infoEl.textContent = 'Top Divider: Controls the Header section height.';
+                else if (id === 'middle') infoEl.textContent = 'Middle Divider: Controls the Blog list height.';
+            } else if (id && postInfo[id]) {
+                infoEl.textContent = postInfo[id];
+            } else if (active.tagName === 'SPAN' && active.closest('.footer')) {
+                infoEl.textContent = `Button: ${active.textContent.trim()}`;
+            }
+        }
+
+        function updatePointer() {
+            // Clear divider pointers (restore diamond text)
+            document.querySelectorAll('.divider .diamond').forEach(d => {
+                d.textContent = '◇';
+            });
+            
+            // Clear footer selections
+            document.querySelectorAll('.footer span.selected').forEach(el => el.classList.remove('selected'));
+
+            // Clear entry pointers
+            document.querySelectorAll('.entry.item').forEach(el => {
+                const textNode = el.firstChild;
+                if (textNode && textNode.nodeType === Node.TEXT_NODE && el.dataset.indent) {
+                    const indent = parseInt(el.dataset.indent);
+                    const spaces = ' '.repeat(indent);
+                    if (textNode.textContent[0] === '>') {
+                        textNode.textContent = spaces + textNode.textContent.slice(indent);
+                    }
+                }
+            });
+
+            let active = navigable[pointerIdx];
+            if (!active) return;
+
+            if (active.classList.contains('divider')) {
+                active.querySelector('.diamond').textContent = '> ◇';
+            } else if (active.tagName === 'SPAN' && active.closest('.footer')) {
+                active.classList.add('selected');
+            } else {
+                const textNode = active.firstChild;
+                if (textNode && textNode.nodeType === Node.TEXT_NODE && active.dataset.indent) {
+                    const indent = parseInt(active.dataset.indent);
+                    textNode.textContent = '>' + ' '.repeat(indent - 1) + textNode.textContent.slice(indent);
+                }
+            }
+        }
+
+        function handleEnter() {
+            let active = navigable[pointerIdx];
+            if (!active) return;
+            if (active.classList.contains('divider')) {
+                if (selectedDivider === active) {
+                    selectedDivider = null;
+                    active.querySelector('.diamond').style.backgroundColor = 'transparent';
+                } else {
+                    if (selectedDivider) {
+                        selectedDivider.querySelector('.diamond').style.backgroundColor = 'transparent';
+                    }
+                    selectedDivider = active;
+                    active.querySelector('.diamond').style.backgroundColor = 'yellow';
+                }
+            } else if (active.tagName === 'SPAN' && active.closest('.footer')) {
+                active.click();
+            } else {
+                alert('Redirecting to placeholder for: ' + active.textContent.trim().replace(/^>\s*/, ''));
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (selectedDivider) {
+                let dy = 0;
+                if (e.key === 'ArrowUp') dy = -5;
+                if (e.key === 'ArrowDown') dy = 5;
+                if (dy !== 0) {
+                    let sectionAbove = selectedDivider.previousElementSibling;
+                    if (sectionAbove) {
+                        let startHeight = sectionAbove.getBoundingClientRect().height;
+                        if (selectedDivider.classList.contains('collapsed')) {
+                            selectedDivider.classList.remove('collapsed');
+                            sectionAbove.style.display = '';
+                            startHeight = 0;
+                        }
+                        let newHeight = startHeight + dy;
+                        let sectionBelow = selectedDivider.nextElementSibling;
+                        if (sectionBelow) {
+                            let belowHeight = sectionBelow.getBoundingClientRect().height;
+                            let maxHeight = startHeight + belowHeight - 20;
+                            newHeight = Math.max(0, Math.min(newHeight, maxHeight));
+                        }
+                        sectionAbove.style.flex = `0 0 ${newHeight}px`;
+                        
+                        if (selectedDivider.dataset.id === 'info' && newHeight <= 20) {
+                            selectedDivider.classList.add('collapsed');
+                            sectionAbove.style.display = 'none';
+                        }
+                    }
+                    e.preventDefault();
+                    return;
+                }
+                if (e.key === 'Escape' || e.key === 'Enter' || e.key === 'z' || e.key === 'Z') {
+                    selectedDivider.querySelector('.diamond').style.backgroundColor = 'transparent';
+                    selectedDivider = null;
+                    e.preventDefault();
+                    return;
+                }
+                if (e.key === 'ArrowLeft') {
+                    selectedDivider.classList.add('collapsed');
+                    let content = selectedDivider.nextElementSibling;
+                    if (content) content.style.display = 'none';
+                    e.preventDefault();
+                    return;
+                }
+                if (e.key === 'ArrowRight') {
+                    selectedDivider.classList.remove('collapsed');
+                    let content = selectedDivider.nextElementSibling;
+                    if (content) content.style.display = '';
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            if (e.key === 'ArrowDown') {
+                if (e.altKey) {
+                    for (let i = pointerIdx + 1; i < navigable.length; i++) {
+                        if (navigable[i].classList.contains('divider') && navigable[i].offsetParent !== null) {
+                            pointerIdx = i; break;
+                        }
+                    }
+                } else {
+                    let nextIdx = pointerIdx + 1;
+                    while (nextIdx < navigable.length && navigable[nextIdx].offsetParent === null) {
+                        nextIdx++;
+                    }
+                    if (nextIdx < navigable.length) {
+                        pointerIdx = nextIdx;
+                    }
+                }
+                updatePointer();
+                updateInfo(navigable[pointerIdx]);
+                e.preventDefault();
+            } else if (e.key === 'ArrowUp') {
+                if (e.altKey) {
+                    for (let i = pointerIdx - 1; i >= 0; i--) {
+                        if (navigable[i].classList.contains('divider') && navigable[i].offsetParent !== null) {
+                            pointerIdx = i; break;
+                        }
+                    }
+                } else {
+                    let prevIdx = pointerIdx - 1;
+                    while (prevIdx >= 0 && navigable[prevIdx].offsetParent === null) {
+                        prevIdx--;
+                    }
+                    if (prevIdx >= 0) {
+                        pointerIdx = prevIdx;
+                    }
+                }
+                updatePointer();
+                updateInfo(navigable[pointerIdx]);
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight') {
+                let active = navigable[pointerIdx];
+                if (active.classList.contains('parent')) {
+                    active.dataset.collapsed = 'false';
+                    document.querySelectorAll(`.child[data-parent="${active.dataset.id}"]`).forEach(c => c.style.display = 'block');
+                    let firstChild = document.querySelector(`.child[data-parent="${active.dataset.id}"]`);
+                    if (firstChild) {
+                        pointerIdx = navigable.indexOf(firstChild);
+                        updatePointer();
+                        updateInfo(navigable[pointerIdx]);
+                    }
+                }
+            } else if (e.key === 'ArrowLeft') {
+                let active = navigable[pointerIdx];
+                if (active.classList.contains('child')) {
+                    let parent = document.querySelector(`[data-id="${active.dataset.parent}"]`);
+                    if (parent) {
+                        pointerIdx = navigable.indexOf(parent);
+                        updatePointer();
+                        updateInfo(navigable[pointerIdx]);
+                    }
+                } else if (active.classList.contains('parent') && active.dataset.collapsed !== 'true') {
+                    active.dataset.collapsed = 'true';
+                    document.querySelectorAll(`.child[data-parent="${active.dataset.id}"]`).forEach(c => c.style.display = 'none');
+                }
+            } else if (e.key === 'Enter' || e.key === 'z' || e.key === 'Z') {
+                handleEnter();
+                e.preventDefault();
+            }
+        });
+
+        // Mouse clicks for navigation and actions
+        navigable.forEach((el, idx) => {
+            el.addEventListener('click', (e) => {
+                pointerIdx = idx;
+                updatePointer();
+                updateInfo(el);
+
+                if (el.classList.contains('parent')) {
+                    if (el.dataset.collapsed === 'true') {
+                        el.dataset.collapsed = 'false';
+                        document.querySelectorAll(`.child[data-parent="${el.dataset.id}"]`).forEach(c => c.style.display = 'block');
+                    } else {
+                        el.dataset.collapsed = 'true';
+                        document.querySelectorAll(`.child[data-parent="${el.dataset.id}"]`).forEach(c => c.style.display = 'none');
+                    }
+                } else if (!el.closest('.footer')) {
+                    // Do not enter if it's a divider (handled by double click or drag)
+                    if (!el.classList.contains('divider')) {
+                        handleEnter();
+                    }
+                }
+            });
+            
+            // Hover sync: update pointer ONLY
+            if (!el.classList.contains('divider')) {
+                el.addEventListener('mouseenter', () => {
+                    if (selectedDivider) {
+                        selectedDivider.querySelector('.diamond').style.backgroundColor = 'transparent';
+                        selectedDivider = null;
+                    }
+                    pointerIdx = idx;
+                    updatePointer();
+                });
+            }
+        });
+
+        // Initial state for parent collapse
+        document.querySelectorAll('.parent').forEach(p => p.dataset.collapsed = 'true');
+        updatePointer();
+
+        // Draggable dividers
+        let isDragging = false;
+        let activeDivider = null;
+        let startY = 0;
+        let startHeight = 0;
+        let sectionAbove = null;
+
+        document.querySelectorAll('.divider').forEach(div => {
+            div.addEventListener('mousedown', (e) => {
+                activeDivider = div;
+                isDragging = true;
+                startY = e.clientY;
+                
+                sectionAbove = div.previousElementSibling;
+                if (sectionAbove) {
+                    startHeight = sectionAbove.getBoundingClientRect().height;
+                    if (div.classList.contains('collapsed')) {
+                        div.classList.remove('collapsed');
+                        sectionAbove.style.display = '';
+                        startHeight = 0;
+                    }
+                    sectionAbove.style.flex = `0 0 ${startHeight}px`;
+                }
+                div.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            div.addEventListener('dblclick', () => {
+                let content = div.nextElementSibling;
+                if (content) {
+                    if (div.classList.contains('collapsed')) {
+                        div.classList.remove('collapsed');
+                        content.style.display = '';
+                    } else {
+                        div.classList.add('collapsed');
+                        content.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging || !activeDivider) return;
+            const dy = e.clientY - startY;
+            
+            if (sectionAbove.style.display === 'none') {
+                sectionAbove.style.display = '';
+                activeDivider.classList.remove('collapsed');
+                startHeight = 0;
+                startY = e.clientY;
+            }
+
+            let newHeight = Math.max(0, startHeight + dy);
+            
+            let sectionBelow = activeDivider.nextElementSibling;
+            if (sectionBelow) {
+                let belowHeight = sectionBelow.getBoundingClientRect().height;
+                let maxHeight = startHeight + belowHeight - 20;
+                newHeight = Math.min(newHeight, maxHeight);
+            }
+            
+            sectionAbove.style.flex = `0 0 ${newHeight}px`;
+            
+            // Auto-collapse cyan divider when near yellow
+            if (activeDivider.dataset.id === 'info' && newHeight <= 20) {
+                if (!activeDivider.classList.contains('collapsed')) {
+                    activeDivider.classList.add('collapsed');
+                    sectionAbove.style.display = 'none';
+                }
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            if (activeDivider) activeDivider.style.cursor = 'grab';
+        });
+
+        // Footer button actions
+        document.querySelector('.footer span[data-id="btn-filter"]').addEventListener('click', () => alert('Filter clicked'));
+        document.querySelector('.footer span[data-id="btn-light"]').addEventListener('click', () => document.body.classList.toggle('light-mode'));
+        document.querySelector('.footer span[data-id="btn-settings"]').addEventListener('click', () => alert('Settings clicked'));
+    </script>
 </body>
-
 </html>

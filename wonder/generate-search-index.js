@@ -14,7 +14,7 @@ const SKIP_DIRS = new Set(['MEDIA', 'search']);
 const wonderDir = __dirname;
 const outputPath = path.join(wonderDir, 'search-index.json');
 
-// extract text content between two simple HTML markers.
+// Extract text content between two simple HTML markers.
 
 function extractTagContent(html, tag) {
   const openPattern = new RegExp(`<${tag}[^>]*>`, 'i');
@@ -29,36 +29,36 @@ function extractTagContent(html, tag) {
   return '';
 }
 
-// strip all HTML tags and collapse whitespace.
+// Strip all HTML tags and collapse whitespace.
 function stripHtml(html) {
   return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')  // remove script blocks
-    .replace(/<style[\s\S]*?<\/style>/gi, '')     // remove style blocks
-    .replace(/<[^>]+>/g, ' ')                     // strip tags
-    .replace(/&[a-z]+;/gi, ' ')                   // strip HTML entities
-    .replace(/\s+/g, ' ')                         // collapse whitespace
+    .replace(/<script[\s\S]*?<\/script>/gi, '')  // Remove script blocks
+    .replace(/<style[\s\S]*?<\/style>/gi, '')     // Remove style blocks
+    .replace(/<[^>]+>/g, ' ')                     // Strip tags
+    .replace(/&[a-z]+;/gi, ' ')                   // Strip HTML entities
+    .replace(/\s+/g, ' ')                         // Collapse whitespace
     .trim();
 }
 
-// extract the body text from an HTML string.
+// Extract the body text from an HTML string.
 function extractBodyText(html) {
   const bodyContent = extractTagContent(html, 'body');
   return stripHtml(bodyContent || html);
 }
 
-// main
+// Main
 const entries = fs.readdirSync(wonderDir, { withFileTypes: true });
 const pages = [];
 
 for (const entry of entries) {
-  // skip the non-directories, exclusion list, and hidden dirs
+  // Skip the non-directories, exclusion list, and hidden dirs
   if (!entry.isDirectory()) continue;
   if (SKIP_DIRS.has(entry.name)) continue;
   if (entry.name.startsWith('.')) continue;
 
   const indexPath = path.join(wonderDir, entry.name, 'index.html');
 
-  // only process if index exists
+  // Only process if index exists
   if (!fs.existsSync(indexPath)) continue;
 
   const html = fs.readFileSync(indexPath, 'utf-8');
@@ -73,10 +73,10 @@ for (const entry of entries) {
   });
 }
 
-// sort alphabetically by id
+// Sort alphabetically by id
 pages.sort((a, b) => a.id.localeCompare(b.id));
 
-// write
+// Write
 fs.writeFileSync(outputPath, JSON.stringify(pages, null, 2), 'utf-8');
 
 console.log(`✓ Generated search-index.json with ${pages.length} page(s):`);
