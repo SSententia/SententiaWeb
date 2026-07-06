@@ -281,13 +281,13 @@
         let selectedDivider = null;
 
         const postInfo = {
-            'url': 'The root of the blog. Welcome!',
-            'b1': 'An introduction to what this blog is about.',
-            'b2': 'A deep dive into why Casualties:Unknown is goated.',
-            'b3': 'Parent post for the Juej series.',
-            'b4': 'Chapter two of the Juej series, which is better.',
-            'b5': 'Chapter three of the Juej series, even better.',
-            'b6': 'Something important, we just don\'t know what.'
+            'url': 'You are here. Welcome! (yellow color example)',
+            'b1': 'An introduction to what this blog',
+            'b2': 'Blue color example. For general topics such as a C:U rambling',
+            'b3': 'THE JUEJ SERIES: THE BEGINNING (blog branch test)',
+            'b4': 'THE JUEJ SERIES: CHAPTER 1 (better)',
+            'b5': 'THE JUEJ SERIES: CHAPTER 2 (even better)',
+            'b6': 'Red color example. For important announcements and stuff'
         };
 
         // Cache for pointer manipulation
@@ -311,10 +311,10 @@
             
             if (active.classList.contains('divider')) {
                 const map = {
-                    info: 'Cyan Divider: Controls the Info section height.',
-                    extra: 'Yellow Divider: Controls the Extra section height.',
-                    top: 'Top Divider: Controls the Header section height.',
-                    middle: 'Middle Divider: Controls the Blog list height.'
+                    info: 'Info section',
+                    extra: 'Extra section',
+                    top: 'Header section',
+                    middle: 'Main section'
                 };
                 infoEl.textContent = map[id] || '';
             } else if (id && postInfo[id]) {
@@ -358,6 +358,8 @@
                 }
             } else if (active.matches('.footer span')) {
                 active.click();
+            } else if (active.classList.contains('blog')) {
+                window.location.href = '../placeholder/index.html';
             } else {
                 alert('Redirecting to placeholder for: ' + active.textContent.trim().replace(/^>\s*/, ''));
             }
