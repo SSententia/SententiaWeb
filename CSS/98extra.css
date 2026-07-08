@@ -69,6 +69,15 @@
     color: white;
 }
 
+.folder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 80px);
+    grid-auto-rows: 80px;
+    gap: 8px;
+    padding: 4px;
+    justify-items: center;
+}
+
 #taskbar {
     position: fixed;
     bottom: 0;
@@ -161,6 +170,8 @@
     left: 2px;
     width: 200px;
     background: silver;
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
     box-shadow: 2px 2px 0 #000;
     display: none;
     z-index: 1001;
@@ -203,6 +214,44 @@
 .start-menu-item:hover {
     background-color: #000080;
     color: white;
+}
+
+.start-menu-submenu {
+    position: relative;
+}
+
+.start-menu-submenu-panel {
+    display: none;
+    position: absolute;
+    top: -2px;
+    left: 98.99%;
+    min-width: 200px;
+    background: silver;
+    border: 2px solid;
+    border-color:#dfdfdf #808080 #808080 #dfdfdf;
+    box-shadow: 2px 2px 0 #000;
+    padding: 2px;
+    margin-left: 2px;
+    z-index: 1002;
+}
+
+.start-menu-submenu:hover > .start-menu-item {
+    background-color: #000080;
+    color: white;
+}
+
+.start-menu-submenu:hover .start-menu-submenu-panel {
+    display: block;
+}
+
+.start-menu-submenu .submenu-arrow {
+    margin-left: auto;
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid black;
+    font-size: 0;
 }
 
 .start-menu-item img {
@@ -651,24 +700,13 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #111;
+    background: #000;
     z-index: 30000;
     display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: none;
-}
-#vga-overlay span {
-    color: #555;
-    font-family: "Courier New", Courier, monospace;
-    font-size: 28px;
-    letter-spacing: 4px;
-    animation: vga-blink 2s ease-in-out infinite;
-}
-@keyframes vga-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
 }
 
 .high-contrast-effect {

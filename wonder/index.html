@@ -291,36 +291,20 @@
   </div>
 
   <script src="https://unpkg.com/lunr/lunr.js"></script>
+  <script src="../JS/gloscr.js"></script>
   <script>
     // Information panels
     function showInformation(type) {
-      document.querySelectorAll('.information').forEach(el => el.style.display = 'none');
-      const target = document.getElementById(type);
+      $$('.information').forEach(el => el.style.display = 'none');
+      const target = $('#' + type);
       target.style.display = target.style.display === 'block' ? 'none' : 'block';
     }
 
-    // Theme toggle
-    const toggle = document.getElementById('modeToggle');
-    toggle.addEventListener('click', () => {
-      const isDark = document.body.hasAttribute('data-theme');
-      if (isDark) {
-        document.body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-      } else {
-        document.body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-      }
-    });
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.body.setAttribute('data-theme', 'dark');
-    }
-
     // Search function
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const luckyBtn = document.getElementById('luckyBtn');
-    const getAllBtn = document.getElementById('getAllBtn');
+    const searchInput = $('#searchInput');
+    const searchBtn = $('#searchBtn');
+    const luckyBtn = $('#luckyBtn');
+    const getAllBtn = $('#getAllBtn');
 
     // Cache the search index for the lucky button
     let cachedPages = null;
@@ -344,7 +328,7 @@
     // Boingboing
     function wonderEasterEgg() {
 
-      if (document.getElementById('dvd-overlay')) return;
+      if ($('#dvd-overlay')) return;
 
       const images = [
         'MEDIA/w.svg',
@@ -371,7 +355,7 @@
 
       images.forEach((src, i) => {
         setTimeout(() => {
-          if (!document.getElementById('dvd-overlay')) return;
+          if (!$('#dvd-overlay')) return;
 
           const img = document.createElement('img');
           img.src = src;
@@ -383,7 +367,7 @@
             opacity: '0',
             transition: 'opacity 0.6s',
             pointerEvents: 'none',
-            filter: document.body.hasAttribute('data-theme') ? 'invert(1)' : 'none',
+            filter: document.body.getAttribute('data-theme') === 'dark' ? 'invert(1)' : 'none',
           });
           overlay.appendChild(img);
 
@@ -401,7 +385,7 @@
           });
 
           function bounce() {
-            if (!document.getElementById('dvd-overlay')) return;
+            if (!$('#dvd-overlay')) return;
 
             x += dx;
             y += dy;

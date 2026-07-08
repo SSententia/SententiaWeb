@@ -308,7 +308,7 @@
 
 <body>
     <div class="search-header">
-        <img class="search-header-logo" alt="Wonder" onclick="window.location.href='../'" />
+        <img class="search-header-logo" onclick="window.location.href='../'" />
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Wonder about..." />
             <button type="button" id="searchBtn">Search</button>
@@ -335,6 +335,7 @@
     </div>
 
     <script src="https://unpkg.com/lunr/lunr.js"></script>
+    <script src="../../JS/gloscr.js"></script>
     <script>
         /**
          * Comment:
@@ -344,26 +345,9 @@
          *  Atleast I'm proud of my work (and bugs)
          */
 
-        // theme
-        const toggle = document.getElementById('modeToggle');
-        toggle.addEventListener('click', () => {
-            const isDark = document.body.hasAttribute('data-theme');
-            if (isDark) {
-                document.body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.body.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-        }
-
-        // submission
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
+        // Submission
+        const searchInput = $('#searchInput');
+        const searchBtn = $('#searchBtn');
 
         function doSearch() {
             const q = searchInput.value.trim();
@@ -376,7 +360,7 @@
             if (e.key === 'Enter') doSearch();
         });
 
-        // read query from url
+        // Read query from url
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q') || '';
         searchInput.value = query;
@@ -384,9 +368,9 @@
             document.title = `${query} — Wonder! Search`;
         }
 
-        // logic stuff
-        const container = document.getElementById('resultsContainer');
-        const loadingEl = document.getElementById('loadingIndicator');
+        // Logic stuff
+        const container = $('#resultsContainer');
+        const loadingEl = $('#loadingIndicator');
 
         let allPages = [];
 
@@ -401,7 +385,7 @@
                     return;
                 }
 
-                // build index
+                // Build index
                 const idx = lunr(function () {
                     this.ref('id');
                     this.field('title', { boost: 10 });
@@ -409,7 +393,7 @@
                     pages.forEach(doc => this.add(doc));
                 });
 
-                // create a lookup map
+                // Create a lookup map
                 const pageMap = {};
                 pages.forEach(p => pageMap[p.id] = p);
 
@@ -422,7 +406,7 @@
                     try {
                         results = idx.search(query);
                     } catch (e) {
-                        // for when lunr throws a bad syntax tantrum
+                        // For when lunr throws a bad syntax tantrum
                         try {
                             results = idx.search(query.replace(/[^a-zA-Z0-9\s]/g, ''));
                         } catch (e2) {
@@ -431,7 +415,7 @@
                     }
                 }
 
-                // render stuff
+                // Render stuff
                 let html = '';
 
                 if (isShowAll) {
@@ -453,7 +437,7 @@
               </ul>
             </div>`;
                 } else {
-                    // render result
+                    // Render result
                     results.forEach(r => {
                         const page = pageMap[r.ref];
                         if (!page) return;
@@ -474,13 +458,11 @@
                 const candidates = pages.filter(p => !resultIds.has(p.id));
                 let alsoLike = [];
 
-                if (candidates.length >= 3) {
+                if (candidates.length > 0) {
                     alsoLike = shuffleArray(candidates).slice(0, 3);
-                } else if (candidates.length > 0) {
-                    alsoLike = shuffleArray(candidates).slice(0, Math.min(3, candidates.length));
                 } else if (pages.length > 3) {
                     // pick 3 random from all if all pages are in results
-                    alsoLike = shuffleArray([...pages]).slice(0, 3);
+                    alsoLike = shuffleArray(pages).slice(0, 3);
                 }
 
                 if (alsoLike.length > 0) {
@@ -508,20 +490,6 @@
                 console.error('Search index error:', err);
             });
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function shuffleArray(arr) {
-            const a = [...arr];
-            for (let i = a.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [a[i], a[j]] = [a[j], a[i]];
-            }
-            return a;
-        }
     </script>
 </body>
 

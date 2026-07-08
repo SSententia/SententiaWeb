@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html> <!-- friendly reminder: replace all placeholder -->
+<html> <!-- (friendly reminder: replace all placeholder) -->
 
 <head>
   <meta charset="UTF-8">
@@ -36,31 +36,31 @@
 
     <div id="desktop">
       <div class="desktop-icon" ondblclick="openWindow('trash-window')">
-        <img src="MEDIA/trash.ico" alt="Trash">
+        <img src="MEDIA/trash.ico">
         <span>Recycle Bin</span>
       </div>
       <div class="desktop-icon" ondblclick="openWindow('help1')">
-        <img src="MEDIA/help2.ico" alt="Help Page">
+        <img src="MEDIA/help2.ico">
         <span>Help Page</span>
       </div>
 
       <div class="desktop-icon" ondblclick="openWindow('navigation-window')">
-        <img src="MEDIA/navi.ico" alt="Navigation">
+        <img src="MEDIA/navi.ico">
         <span>Navigation</span>
       </div>
 
       <div class="desktop-icon" ondblclick="openWindow('folder-window')">
-        <img src="MEDIA/folder.ico" alt="New folder (2)">
+        <img src="MEDIA/folder.ico">
         <span>New folder (2)</span>
       </div>
 
       <div class="desktop-icon" ondblclick="openWindow('internet-window')">
-        <img src="MEDIA/internet.ico" alt="The Internet">
+        <img src="MEDIA/internet.ico">
         <span>THE INTERNET!!!</span>
       </div>
 
-      <div class="desktop-icon" ondblclick="window.location.href='https://sententia.neocities.org'">
-        <img src="MEDIA/goback.jpg" alt="go back">
+      <div class="desktop-icon" ondblclick="window.location.href='../'">
+        <img src="MEDIA/goback.jpg">
         <span>Go back to my cool website</span>
       </div>
 
@@ -148,7 +148,7 @@
           </div>
         </div>
         <div class="window-body">
-          <img src="MEDIA/duck.gif" alt="A dancing duck" style="width: 100%; height: 100%;">
+          <img src="MEDIA/duck.gif" style="width: 100%; height: 100%;">
           <div class="field-row">
             <input id="dradio1" type="radio" name="options" onclick="acknowledgement()">
             <label for="dradio1">It is a duck</label>
@@ -194,31 +194,27 @@
           </div>
         </div>
         <div class="field-border" style="padding: 8px">
-          <div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 10px;">
-            <div class="desktop-icon" ondblclick="openWindow('duck-window')" style="width: auto;">
-              <img src="MEDIA/ddi.ico" alt="Daily Duck Identifier">
+          <div class="folder-grid">
+            <div class="desktop-icon" ondblclick="openWindow('duck-window')">
+              <img src="MEDIA/ddi.ico">
               <span style="color: black; text-shadow: none;">Daily Duck Identifier</span>
             </div>
-            <!-- User Requested Files -->
             <div class="desktop-icon"
-              ondblclick="openMedia('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')"
-              style="width: auto;">
-              <img src="MEDIA/multimedia.ico" alt="sample_video.mp4">
+              ondblclick="openMedia('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')">
+              <img src="MEDIA/multimedia.ico">
               <span style="color: black; text-shadow: none;">sample_video.mp4</span>
             </div>
             <div class="desktop-icon"
-              ondblclick="openMedia('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')"
-              style="width: auto;">
-              <img src="MEDIA/speaker.ico" alt="audio.mp3">
+              ondblclick="openMedia('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')">
+              <img src="MEDIA/speaker.ico">
               <span style="color: black; text-shadow: none;">audio.mp3</span>
             </div>
-            <div class="desktop-icon" ondblclick="openMedia('MEDIA/yippe.gif')" style="width: auto;">
-              <img src="MEDIA/img.ico" alt="yippe.gif">
+            <div class="desktop-icon" ondblclick="openMedia('MEDIA/yippe.gif')">
+              <img src="MEDIA/img.ico">
               <span style="color: black; text-shadow: none;">yippe.gif</span>
             </div>
-
-            <div class="desktop-icon" ondblclick="openWindow('reassurance-dialog')" style="width: auto;">
-              <img src="MEDIA/virus.ico" alt="Virus.exe">
+            <div class="desktop-icon" ondblclick="openWindow('reassurance-dialog')">
+              <img src="MEDIA/virus.ico">
               <span style="color: black; text-shadow: none;">Virus.exe</span>
             </div>
           </div>
@@ -308,7 +304,7 @@
       </div>
 
       <!-- navigation window -->
-      <div class="window" style="position: absolute; top: 50vh; left: 50vw; width: 300px;" id="about-window">
+      <div class="window" style="position: absolute; top: 50vh; left: 50vw; width: 300px; display: none;" id="navigation-window">
         <div class="title-bar">
           <div class="title-bar-text">Navigation</div>
           <div class="title-bar-controls">
@@ -316,34 +312,42 @@
           </div>
         </div>
         <div class="status-field-border" style="padding: -8px">
-          <p style="text-align: center;"><strong>A list of pages I've made (excluding the hidden ones)</strong></p>
+          <p style="text-align: center;"><strong>A list of pages I've made (excluding the hidden and ones I wish not to track)</strong></p>
         </div>
         <ul class="tree-view">
-          <li>Sententia's website</li>
+          <li>----<a href="../placeholder/">Sententia's website</a>--------------------------------------------------------------</li>
           <ul>
-            <li><a href='https://sententia.neocities.org/'>Frontpage</a></li>
+            <li><a href='../'>Frontpage</a></li>
             <ul>
-              <li><a href='help.html#navigation'>-> Help #navigation</a></li>
+              <li><a href='#navigation'>-> Help #navigation</a></li>
             </ul>
-            <li>Help</li>
+            <li>Help <span style="color: #808080">(You are here)</span></li>
             <ul>
-              <li>-> Frontpage</li>
+              <li><a href='../'>-> Frontpage</a></li>
             </ul>
-            <li>Blog</li>
-            <li>Cipher</li>
             <details>
-              <summary>Wonder</summary>
+              <summary><a href="../blog/">Blog</a></summary>
               <ul>
-                <li>Þ (thorn letter)</li>
-                <li>42</li>
-                <li>Abysmal</li>
+                My blog posts, duh. The list can be seen there anyway... Check em out!!!
               </ul>
             </details>
-            <li>Archive</li>
+            <li><a href="../cipher/">Cipher <span style="color: #df5f5f">(VWIP)</span></a></li>
+            <details>
+              <summary><a href="../wonder/">Wonder</a></summary>
+              <ul>
+                <li><a href="../wonder/Þ/">Þ (thorn letter) <span style="color: #808080">(test page)</span></a></li>
+                <li><a href="../wonder/42/">42 <span style="color: #808080">(test page)</span></a></li>
+                <li><a href="../wonder/abysmal/">Abysmal <span style="color: #808080">(test page)</span></a></li>
+                ...and a bunch more. I'm not going to keep track on this, sorry. See the full list here
+              </ul>
+            </details>
+            <li><a href="../archive/">Archive</a></li>
             <ul>
-              <li>Old index</li>
+              <li><a href="../archive/home_old/">Old homepage</a></li>
+              <li><a href="../archive/navigation_A/">Navigation (April edition)</a></li>
             </ul>
           </ul>
+          -------------------------------------------------------------------------------<a href="../placeholder/">The end</a>----
         </ul>
         <div class="status-bar">
           <p class="status-bar-field">Legends:</p>
@@ -359,7 +363,7 @@
           <button aria-label="Close" onclick="closeWindow(this)"></button>
         </div>
       </div>
-      <img src="MEDIA/runin.gif" alt="Run">
+      <img src="MEDIA/runin.gif">
     </div>
 
     <!-- notepad window -->
@@ -434,7 +438,7 @@
     </div>
 
     <!-- settings window -->
-    <div class="window" style="position: absolute; z-index: 1; top: 50px; left: 100px;" id="settings">
+    <div class="window" style="position: absolute; z-index: 1; top: 50px; left: 100px; display: none;" id="settings">
       <div class="title-bar">
         <div class="title-bar-text">Settings</div>
         <div class="title-bar-controls">
@@ -604,28 +608,42 @@
     </div>
     <div class="start-menu-content">
       <div class="start-menu-item" onclick="openWindow('about-window'); toggleStartMenu()">
-        <img src="MEDIA/pc.ico" alt="About">
+        <img src="MEDIA/pc.ico">
         <span>About</span>
       </div>
+      <div class="start-menu-divider"></div>
+            <div class="start-menu-submenu">
+        <div class="start-menu-item">
+          <img src="MEDIA/directory_program.ico">
+          <span>Programs</span>
+          <span class="submenu-arrow">▶</span>
+        </div>
+        <div class="start-menu-submenu-panel">
+          <div class="start-menu-item" onclick="openWindow('notepad-window'); toggleStartMenu()">
+            <img src="MEDIA/notepad.ico">
+            <span>Notepad</span>
+          </div>
+          <div class="start-menu-item" onclick="openWindow('media-player-window'); toggleStartMenu()">
+            <img src="MEDIA/multimedia.ico">
+            <span>Multimedia Viewer</span>
+          </div>
+        </div>
+      </div>
       <div class="start-menu-item" onclick="openWindow('run-window'); toggleStartMenu()">
-        <img src="MEDIA/run.ico" alt="Run" id="start-menu-item-small">
+        <img src="MEDIA/run.ico" id="start-menu-item-small">
         <span>Run...</span>
       </div>
+      <div class="start-menu-item" onclick="openWindow('settings'); toggleStartMenu()">
+        <img src="MEDIA/settings.ico" id="start-menu-item-small">
+        <span>Settings</span>
+      </div>
       <div class="start-menu-item" onclick="openWindow('help1'); toggleStartMenu()">
-        <img src="MEDIA/help2.ico" alt="Help">
+        <img src="MEDIA/help2.ico">
         <span>Help Page</span>
-      </div>
-      <div class="start-menu-item" onclick="openWindow('notepad-window'); toggleStartMenu()">
-        <img src="MEDIA/notepad.ico" alt="Notepad">
-        <span>Notepad</span>
-      </div>
-      <div class="start-menu-item" onclick="openWindow('media-player-window'); toggleStartMenu()">
-        <img src="MEDIA/multimedia.ico" alt="Multimedia Viewer">
-        <span>Multimedia Viewer</span>
       </div>
       <div class="start-menu-divider"></div>
       <div class="start-menu-item" onclick="shutdown()">
-        <img src="MEDIA/shutdown.ico" alt="Shutdown" id="start-menu-item-small">
+        <img src="MEDIA/shutdown.ico" id="start-menu-item-small">
         <span>Shutdown...</span>
       </div>
     </div>
@@ -634,11 +652,11 @@
   <!-- taskbar -->
   <div id="taskbar">
     <button id="start-button" onclick="toggleStartMenu()">
-      <img src="MEDIA/start.ico" alt="Start">
+      <img src="MEDIA/start.ico">
       <span style="margin-left: 5px;">Start</span>
     </button>
     <div id="taskbar-tray">
-      <img src="MEDIA/speaker.ico" alt="Volume" onclick="toggleVolumePopup()">
+      <img src="MEDIA/speaker.ico" onclick="toggleVolumePopup()">
       <div id="volume-popup">
         <label for="volume-slider">Cowbell</label>
         <div class="is-vertical">

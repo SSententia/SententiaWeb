@@ -28,6 +28,9 @@ document.addEventListener('pointerup', function (e) {
   }
 });
 
+// URL FRAGMENT
+if (location.hash === '#navigation') openWindow('navigation-window');
+
 // SETTINGS RADIO LISTENERS
 const radioButtons = document.querySelectorAll('input[id|="S"]');
 const EFFECT_TARGETS = ['desktop-wrapper', 'taskbar', 'start-menu'];
@@ -432,6 +435,7 @@ window.addEventListener('keyup', function (e) {
 });
 
 let vgaEjected = false;
+let vgaEjectTimeout = null;
 let narratorEnabled = false;
 let narratorAudio = null;
 let stickyKeysEnabled = false;
@@ -452,10 +456,28 @@ function Blackscreen() {
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'vga-overlay';
-    overlay.innerHTML = '<span>NO SIGNAL</span>';
     document.body.appendChild(overlay);
   }
-  overlay.style.display = vgaEjected ? 'flex' : 'none';
+  if (vgaEjected) {
+    // Flash 1-bit color briefly before blanking the screen
+    if (vgaEjectTimeout !== null) {
+      clearTimeout(vgaEjectTimeout);
+      vgaEjectTimeout = null;
+    }
+    addFilterEffect('monochrome');
+    overlay.style.display = 'none';
+    vgaEjectTimeout = setTimeout(() => {
+      vgaEjectTimeout = null;
+      if (vgaEjected) overlay.style.display = 'flex';
+    }, 300);
+  } else {
+    if (vgaEjectTimeout !== null) {
+      clearTimeout(vgaEjectTimeout);
+      vgaEjectTimeout = null;
+    }
+    removeFilterEffect('monochrome');
+    overlay.style.display = 'none';
+  }
 }
 
 // NARRATOR
@@ -944,7 +966,9 @@ function closeWindow(button) {
 function openWindow(windowId) {
   const windowDiv = document.getElementById(windowId);
   if (windowDiv) {
-    windowDiv.style.display = 'block';
+    setTimeout(() => {
+      windowDiv.style.display = 'block';
+    }, 98)
     windowDiv.style.zIndex = highestZIndex++;
 
     if (windowId === 'duck-window' || windowId === 'folder-window') {
@@ -1178,7 +1202,7 @@ function createTrashFile() {
   const fileDiv = document.createElement('div');
   fileDiv.className = 'trash-file';
   fileDiv.innerHTML = `
-        <img src="LOCAL/MEDIA/HELP/file.ico" alt="File">
+        <img src="LOCAL/MEDIA/HELP/file.ico">
         <span title="${fileContent}">${fileName}</span>
       `;
   return fileDiv;
@@ -1374,6 +1398,11 @@ function removeVirus() {
   }
 
   // Clean up accessibility joke effects
+  if (vgaEjectTimeout !== null) {
+    clearTimeout(vgaEjectTimeout);
+    vgaEjectTimeout = null;
+  }
+  removeFilterEffect('monochrome');
   const vgaOverlay = document.getElementById('vga-overlay');
   if (vgaOverlay) { vgaOverlay.style.display = 'none'; vgaEjected = false; }
   if (narratorEnabled) { EnableNarrator(); }
