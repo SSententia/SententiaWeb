@@ -956,6 +956,27 @@ function closeWindow(button) {
   if (windowDiv && windowDiv.id === 'bogol-window') {
     resetBogolWizard();
   }
+  // Reset simulated browser history and iframe when closing the internet window
+  if (windowDiv && windowDiv.id === 'internet-window') {
+    browserHistory = [];
+    browserHistoryIndex = -1;
+    const iframe = document.getElementById('browser-iframe');
+    if (iframe) {
+      const homeSrc = iframe.getAttribute('src');
+      try {
+        // location.replace() avoids adding a real joint-history entry on
+        // close, same as every other simulated-browser navigation below.
+        iframe.contentWindow.location.replace(homeSrc);
+      } catch (e) {
+        iframe.src = homeSrc;
+      }
+    }
+    const urlBar = document.getElementById('browser-url');
+    if (urlBar) urlBar.value = urlBar.getAttribute('value');
+    const status = document.getElementById('browser-status');
+    if (status) status.textContent = 'Done';
+    browserUpdateNavButtons();
+  }
   if (windowDiv) {
     setTimeout(() => {
       windowDiv.style.display = 'none';
@@ -981,6 +1002,16 @@ function openWindow(windowId) {
     // Infinite scroll init
     if (windowId === 'trash-window') {
       initializeTrash();
+    }
+
+    // Seed the simulated browser history on first open
+    if (windowId === 'internet-window' && browserHistory.length === 0) {
+      const initialUrl = document.getElementById('browser-url').value.trim();
+      if (initialUrl) {
+        browserHistory.push(initialUrl);
+        browserHistoryIndex = 0;
+        browserUpdateNavButtons();
+      }
     }
   }
 }
@@ -1149,11 +1180,6 @@ function loadMedia() {
     container.appendChild(video);
     currentMedia = video;
   }
-}
-
-function loadSampleVideo() {
-  // Legacy function kept for compatibility, but updated to use new openMedia if needed
-  openMedia('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
 }
 
 function openMedia(url) {
@@ -1547,43 +1573,168 @@ document.addEventListener('keydown', function (e) {
 });
 
 // THE INTERNET BROWSER
-function browserGo() {
-  let url = document.getElementById('browser-url').value.trim();
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = 'https://' + url;
-    document.getElementById('browser-url').value = url;
+// Simulated browser history — completely independent of window.history.
+// Uses location.replace() so no entries are ever added to the shared
+// joint-session history that real back/forward buttons walk through.
+let browserHistory = [];
+let browserHistoryIndex = -1;
+
+let browserLoadTimeout = null;
+let pendingUserUrl = null;
+
+/** Navigate the iframe to url without creating a shared-history entry. */
+function browserLoadUrl(url) {
+  const iframe = document.getElementById('browser-iframe');
+  const statusEl = document.getElementById('browser-status');
+  statusEl.textContent = 'Loading...';
+
+  if (browserLoadTimeout) { clearTimeout(browserLoadTimeout); browserLoadTimeout = null; }
+
+  try {
+    // location.replace() swaps the document without creating a
+    // shared-history entry, so real back/forward never sees it.
+    iframe.contentWindow.location.replace(url);
+  } catch (e) {
+    // Cross-origin fallback — .replace() is blocked, so set .src
+    // instead. This does create a shared-history entry, but it's
+    // unavoidable for cross-origin URLs.
+    iframe.src = url;
   }
 
-  const iframe = document.getElementById('browser-iframe');
-  iframe.src = url;
-  document.getElementById('browser-status').textContent = 'Loading...';
-
   iframe.onload = () => {
-    document.getElementById('browser-status').textContent = 'Done';
+    if (browserLoadTimeout) { clearTimeout(browserLoadTimeout); browserLoadTimeout = null; }
+    statusEl.textContent = 'Done';
+
+    // Detect the actual URL after any redirects (same-origin only)
+    let loadedUrl;
+    try {
+      loadedUrl = iframe.contentWindow.location.href;
+    } catch (e) {
+      loadedUrl = url;
+    }
+
+    const urlBar = document.getElementById('browser-url');
+    if (loadedUrl !== urlBar.value) {
+      urlBar.value = loadedUrl;
+    }
+
+    // Update history: add the loaded URL if it's not the current entry
+    // (handles same-origin redirects and iframe-initiated navigations).
+    // Skip if we can tell this is a back/forward/reload (URL matches
+    // an existing history entry near the current index).
+    const isExistingEntry =
+      browserHistoryIndex >= 0 &&
+      loadedUrl === browserHistory[browserHistoryIndex];
+
+    if (!isExistingEntry) {
+      if (pendingUserUrl) {
+        // User typed URL — truncate forward history and add
+        browserHistory = browserHistory.slice(0, browserHistoryIndex + 1);
+        browserHistory.push(loadedUrl);
+        browserHistoryIndex = browserHistory.length - 1;
+      } else {
+        // Iframe-initiated navigation (link click, JS redirect, etc.)
+        // Only add if it's genuinely new (not a back/forward/reload)
+        const isInHistory = browserHistory.indexOf(loadedUrl);
+        if (isInHistory === -1) {
+          browserHistory = browserHistory.slice(0, browserHistoryIndex + 1);
+          browserHistory.push(loadedUrl);
+          browserHistoryIndex = browserHistory.length - 1;
+        } else {
+          browserHistoryIndex = isInHistory;
+        }
+      }
+      pendingUserUrl = null;
+    }
+
+    browserUpdateNavButtons();
   };
 
   iframe.onerror = () => {
-    document.getElementById('browser-status').textContent = 'Error loading page';
+    if (browserLoadTimeout) { clearTimeout(browserLoadTimeout); browserLoadTimeout = null; }
+    statusEl.textContent = 'Error loading page';
+    pendingUserUrl = null;
+    browserUpdateNavButtons();
   };
+
+  // Timeout so status bar doesn't stay 'Loading...' forever
+  browserLoadTimeout = setTimeout(() => {
+    browserLoadTimeout = null;
+    if (statusEl.textContent === 'Loading...') statusEl.textContent = 'Done';
+    browserUpdateNavButtons();
+  }, 15000);
 }
+
+/** Shared entry point for any "user typed/clicked a destination" navigation. */
+function browserNavigateTo(url) {
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  document.getElementById('browser-url').value = url;
+  pendingUserUrl = url;
+  browserLoadUrl(url);
+  browserUpdateNavButtons();
+}
+
+function browserGo() {
+  const url = document.getElementById('browser-url').value.trim();
+  if (url) browserNavigateTo(url);
+}
+
+// Intercept link clicks inside the embedded page itself (not just the Go/
+// Back/Forward toolbar) so browsing by clicking around also goes through
+// location.replace() instead of a native link navigation. Native navigation
+// inside the iframe is still a normal "push" as far as the real browser is
+// concerned, so left alone it can add an entry to the real joint history -
+// same bug, just triggered by a click instead of the toolbar.
+// This only works for same-origin content: cross-origin pages can't be
+// scripted from here at all (that's the same-origin policy working as
+// intended), so links on a truly external site are outside what any
+// parent-page JS can fix.
+document.getElementById('browser-iframe').addEventListener('load', function () {
+  let doc;
+  try {
+    doc = this.contentDocument;
+  } catch (e) {
+    return; // cross-origin - nothing we're allowed to touch
+  }
+  if (!doc) return;
+
+  doc.addEventListener('click', function (e) {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.toLowerCase().startsWith('javascript:')) return;
+    e.preventDefault();
+    browserNavigateTo(link.href);
+  }, true);
+}, true);
 
 function browserRefresh() {
-  const iframe = document.getElementById('browser-iframe');
-  iframe.src = iframe.src;
-}
-
-function browserBack() {
-  try {
-    document.getElementById('browser-iframe').contentWindow.history.back();
-  } catch (e) {
+  if (browserHistoryIndex >= 0) {
+    // Reload current entry without modifying history
+    browserLoadUrl(browserHistory[browserHistoryIndex]);
   }
 }
 
-function browserForward() {
-  try {
-    document.getElementById('browser-iframe').contentWindow.history.forward();
-  } catch (e) {
+function browserGoStep(delta) {
+  const newIndex = browserHistoryIndex + delta;
+  if (newIndex >= 0 && newIndex < browserHistory.length) {
+    pendingUserUrl = null; // cancel any in-flight user navigation
+    browserHistoryIndex = newIndex;
+    browserLoadUrl(browserHistory[browserHistoryIndex]);
+    browserUpdateNavButtons();
   }
+}
+
+function browserBack() { browserGoStep(-1); }
+function browserForward() { browserGoStep(1); }
+
+function browserUpdateNavButtons() {
+  const backBtn = document.querySelector('#internet-window .browser-toolbar button:first-child');
+  const fwdBtn = document.querySelector('#internet-window .browser-toolbar button:nth-child(2)');
+  if (backBtn) backBtn.disabled = browserHistoryIndex <= 0;
+  if (fwdBtn) fwdBtn.disabled = browserHistoryIndex >= browserHistory.length - 1;
 }
 
 // WINDOW INITIALIZATION

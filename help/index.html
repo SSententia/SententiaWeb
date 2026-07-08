@@ -85,7 +85,7 @@
           </menu>
           <div class="window" id="tab1" role="tabpanel" style="display: block;">
             <div class="window-body">
-              <p>the tab content</p>
+              <p>First of all, thank you for visiting my website.</p>
               <div class="status-bar">
                 <p class="status-bar-field">Made with love <3 <a href="https://jdan.github.io/98.css/">(and 98.css)</a>
                 </p>
@@ -424,7 +424,8 @@
           <button onclick="browserForward()">▶</button>
           <button onclick="browserRefresh()">🔄</button>
           <input type="text" class="browser-address" id="browser-url" placeholder="http://"
-            value="https://sententia.neocities.org/wonder">
+            value="https://sententia.neocities.org/wonder"
+            onkeydown="if(event.key==='Enter')browserGo()">
           <button onclick="browserGo()">Go</button>
         </div>
         <iframe class="browser-iframe" id="browser-iframe" src="../wonder"
@@ -584,14 +585,14 @@
     <!-- sticky keys dialog -->
     <div class="window" style="position: fixed !important; display: none; width: 350px; z-index: 25000;" id="sticky-keys-dialog">
       <div class="title-bar">
-        <div class="title-bar-text">Sticky Keys</div>
+        <div class="title-bar-text">STOP!!! YOU ARE TYPING TOO FAST!!!</div>
         <div class="title-bar-controls">
           <button aria-label="Close" onclick="dismissStickyKeys()"></button>
         </div>
       </div>
       <div class="window-body" style="padding: 15px; text-align: center;">
-        <p>Sticky Keys lets you press one key at a time for keyboard shortcuts.</p>
-        <p style="margin-top: 10px;">Do you want to turn on Sticky Keys?</p>
+        <p>In this particularly concerning manner, and for your well-being, we recommend enabling Sticky Keys in an effort to slow you down.</p>
+        <p style="margin-top: 10px;">Do you want to enable Sticky Keys? (we'll put slime on your keyboard, by the way)</p>
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
           <button onclick="activateStickyKeys()">Yes</button>
           <button onclick="dismissStickyKeys()">No</button>
@@ -644,7 +645,7 @@
       <div class="start-menu-divider"></div>
       <div class="start-menu-item" onclick="shutdown()">
         <img src="MEDIA/shutdown.ico" id="start-menu-item-small">
-        <span>Shutdown...</span>
+        <span>Shut Down...</span>
       </div>
     </div>
   </div>
