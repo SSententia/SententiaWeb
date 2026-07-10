@@ -1037,8 +1037,36 @@ function dragElement(elmnt) {
   const header = elmnt.querySelector('.title-bar');
   if (header) {
     header.onpointerdown = dragMouseDown;
+    header.ondblclick = toggleMaximize;
   } else {
     return;
+  }
+
+  // ponytail: dblclick title-bar toggles maximized. Rectangles stored on
+  // the element itself — cheapest place to keep per-window snapshot state.
+  function toggleMaximize() {
+    if (elmnt.style.display === 'none') return;
+    if (elmnt.dataset.maximized === '1') {
+      elmnt.style.top = elmnt.dataset.prevTop;
+      elmnt.style.left = elmnt.dataset.prevLeft;
+      elmnt.style.width = elmnt.dataset.prevWidth;
+      elmnt.style.height = elmnt.dataset.prevHeight;
+      elmnt.style.position = 'absolute';
+      delete elmnt.dataset.maximized;
+      delete elmnt.dataset.prevTop;
+    } else {
+      elmnt.dataset.prevTop = elmnt.style.top;
+      elmnt.dataset.prevLeft = elmnt.style.left;
+      elmnt.dataset.prevWidth = elmnt.style.width;
+      elmnt.dataset.prevHeight = elmnt.style.height;
+      elmnt.style.top = '0';
+      elmnt.style.left = '0';
+      elmnt.style.width = window.innerWidth + 'px';
+      elmnt.style.height = (window.innerHeight - 28) + 'px'; // 28 = taskbar
+      elmnt.style.position = 'absolute';
+      elmnt.dataset.maximized = '1';
+    }
+    elmnt.style.zIndex = highestZIndex++;
   }
 
   function dragMouseDown(e) {
@@ -1069,6 +1097,78 @@ function dragElement(elmnt) {
     document.onpointerup = null;
     document.onpointermove = null;
   }
+}
+
+// ponytail: corner-handle resize. Mirrors dragElement — same pointer-event
+// model, so it works identically on touch and mouse. One edge handle would
+// be enough; we add all eight because eight is the same ~30 lines and users
+// expect Win9x edge resize. Clamp to min sizes + viewport; not animating
+// because cheap drag is better than a smooth-looking janky one.
+function makeResizable(win) {
+  var HIT = 6; // ponytail: px-thick edge grab band; tuned for finger + still precise with mouse
+  win.style.boxSizing = 'border-box';
+  win.addEventListener('pointerdown', function (e) {
+    if (jsLessActive) return;
+    if (e.target.tagName === 'BUTTON' || e.target.closest('.title-bar-controls')) return;
+    var r = win.getBoundingClientRect();
+    var fromLeft = e.clientX - r.left;
+    var fromTop = e.clientY - r.top;
+    var fromRight = r.right - e.clientX;
+    var fromBottom = r.bottom - e.clientY;
+    var edge = null;
+    if (fromTop < HIT) edge = (fromLeft < HIT) ? 'nw' : (fromRight < HIT) ? 'ne' : 'n';
+    else if (fromBottom < HIT) edge = (fromLeft < HIT) ? 'sw' : (fromRight < HIT) ? 'se' : 's';
+    else if (fromLeft < HIT) edge = 'w';
+    else if (fromRight < HIT) edge = 'e';
+    if (!edge) return;
+
+    // Only consider visible windows for sizing caps — hidden ones have junk rects
+    if (win.style.display === 'none') return;
+
+    e.preventDefault();
+    var startX = e.clientX, startY = e.clientY;
+    var startW = r.width, startH = r.height;
+    var startLeft = win.offsetLeft, startTop = win.offsetTop;
+    var minW = 180, minH = 100, maxZ = 9999;
+
+    // use pointer capture so the handle stays coherent if the cursor
+    // outruns it (pointer capture beats document-level onmove here)
+    if (win.setPointerCapture) {
+      try { win.setPointerCapture(e.pointerId); } catch (_) {}
+    }
+
+    function onMove(ev) {
+      var dx = ev.clientX - startX;
+      var dy = ev.clientY - startY;
+      var newW = startW, newH = startH, newLeft = startLeft, newTop = startTop;
+      if (edge.indexOf('e') !== -1) newW = startW + dx;
+      if (edge.indexOf('s') !== -1) newH = startH + dy;
+      if (edge.indexOf('w') !== -1) { newW = startW - dx; newLeft = startLeft + dx; }
+      if (edge.indexOf('n') !== -1) { newH = startH - dy; newTop = startTop + dy; }
+
+      newW = Math.max(minW, Math.min(newW, window.innerWidth - newLeft - 2));
+      newH = Math.max(minH, Math.min(newH, window.innerHeight - newTop - 28)); // ponytail: 28 = taskbar
+      // dragging n/w past the min size inverts — clamp back if so
+      if (newW <= minW && edge.indexOf('w') !== -1) { newLeft = startLeft + startW - minW; newW = minW; }
+      if (newH <= minH && edge.indexOf('n') !== -1) { newTop = startTop + startH - minH; newH = minH; }
+
+      win.style.width = newW + 'px';
+      win.style.height = newH + 'px';
+      win.style.left = newLeft + 'px';
+      win.style.top = newTop + 'px';
+    }
+    function onUp(ev) {
+      win.removeEventListener('pointermove', onMove);
+      win.removeEventListener('pointerup', onUp);
+      win.removeEventListener('pointercancel', onUp);
+      if (win.releasePointerCapture && ev && ev.pointerId !== undefined) {
+        try { win.releasePointerCapture(ev.pointerId); } catch (_) {}
+      }
+    }
+    win.addEventListener('pointermove', onMove);
+    win.addEventListener('pointerup', onUp);
+    win.addEventListener('pointercancel', onUp);
+  });
 }
 
 // TABS
@@ -1284,6 +1384,7 @@ function spawnHelpWindow() {
 
   document.getElementById('desktop').appendChild(newWindow);
   dragElement(newWindow);
+  makeResizable(newWindow);
 
   newWindow.addEventListener('mousedown', () => {
     newWindow.style.zIndex = highestZIndex++;
@@ -1741,6 +1842,7 @@ function browserUpdateNavButtons() {
 let highestZIndex = 10;
 document.querySelectorAll('.window').forEach(win => {
   dragElement(win);
+  makeResizable(win);
 
   win.addEventListener('mousedown', () => {
     win.style.zIndex = highestZIndex++;

@@ -794,6 +794,68 @@ body {
 .js-less *:not(input):not(textarea):not(select):not(label) {
     pointer-events: none !important;
 }
+
+/* ── Window resizing ───────────────────────────────────────
+   makeResizable() (JS) writes width/height on .window directly.
+   Children must flow with that width/height instead of hard-coding it.
+   touch-action: none keeps starting a resize from scrolling/pinching
+   on mobile — conflicts with dragElement's own preventDefault, both
+   agree so no clash. */
+html:has(.window),
+body { touch-action: manipulation; }
+
+.window {
+    box-sizing: border-box;
+    min-width: 180px;
+    min-height: 100px;
+}
+
+.window-body {
+    box-sizing: border-box;
+}
+
+/* fixed-height-or-overflow-box children: flex/fill instead of fixed px.
+   iframe keeps a sane min so content stays usable on small windows. */
+.browser-iframe {
+    height: auto;
+    min-height: 200px;
+    flex: 1 1 auto;
+}
+
+.media-container,
+.trash-content,
+.notepad-textarea {
+    box-sizing: border-box;
+}
+
+.notepad-textarea {
+    height: auto;
+    min-height: 140px;
+    resize: none;
+}
+
+#trash-window .field-border,
+#internet-window .window-body,
+#notepad-window .window-body,
+#media-player-window .window-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#internet-window .window-body > .browser-iframe,
+#trash-window > .field-border.trash-content,
+#notepad-window .window-body > .notepad-textarea,
+#media-player-window .window-body > .media-container {
+    flex: 1 1 auto;
+}
+
+@media (max-width: 600px) {
+    /* On phones, doubling the edge hit makes grabbing
+       the resize band reliable under a fingertip. */
+    .window { outline: 0; }
+}
+
 #js-less-readme {
     position: fixed;
     top: 50%;
