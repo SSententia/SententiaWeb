@@ -1763,3 +1763,44 @@ function changeWallpaper() {
     wrapper.style.backgroundRepeat = "no-repeat";
   }
 }
+
+// Prevent the mobile browser from panning/overscrolling the page while
+// dragging windows. Scrollable elements inside windows are still allowed
+// to scroll normally.
+(function () {
+  function isScrollableTarget(target) {
+    return !!target.closest('.trash-content, .notepad-textarea, .browser-iframe, select, textarea, input');
+  }
+
+  document.addEventListener('touchmove', function (e) {
+    if (isScrollableTarget(e.target)) return;
+    e.preventDefault();
+  }, { passive: false });
+
+  // Keep the taskbar locked to the bottom of the actual visible viewport
+  // and resize it when the viewport changes (e.g. URL bar hide/show).
+  function lockTaskbarToViewport() {
+    const taskbar = document.getElementById('taskbar');
+    if (!taskbar) return;
+    const vv = window.visualViewport;
+    const width = vv ? Math.round(vv.width) : window.innerWidth;
+    const height = vv ? Math.round(vv.height) : window.innerHeight;
+    taskbar.style.position = 'fixed';
+    // Use top instead of bottom so the taskbar is explicitly anchored to
+    // the visible viewport, avoiding mobile bugs with bottom:0 inside
+    // an overflowed layout.
+    taskbar.style.top = (height - 30) + 'px';
+    taskbar.style.left = '0px';
+    taskbar.style.width = width + 'px';
+    taskbar.style.bottom = 'auto';
+    taskbar.style.right = 'auto';
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', lockTaskbarToViewport);
+    window.visualViewport.addEventListener('scroll', lockTaskbarToViewport);
+  }
+  window.addEventListener('resize', lockTaskbarToViewport);
+  window.addEventListener('orientationchange', lockTaskbarToViewport);
+  lockTaskbarToViewport();
+})();
