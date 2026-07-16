@@ -904,12 +904,17 @@ document.addEventListener('click', function (e) {
 });
 
 // START MENU
+function toggleProgramsPinned(event) {
+  event.currentTarget.closest('.start-menu-submenu').classList.toggle('pinned');
+}
+
 function toggleStartMenu() {
   const startMenu = document.getElementById('start-menu');
   const startButton = document.getElementById('start-button');
   if (startMenu.style.display === 'block') {
     startMenu.style.display = 'none';
     startButton.classList.remove('active');
+    startMenu.querySelectorAll('.start-menu-submenu.pinned').forEach(el => el.classList.remove('pinned'));
   } else {
     startMenu.style.display = 'block';
     startButton.classList.add('active');
@@ -922,6 +927,7 @@ document.addEventListener('click', function (event) {
   if (startMenu && startButton && !startMenu.contains(event.target) && !startButton.contains(event.target)) {
     startMenu.style.display = 'none';
     startButton.classList.remove('active');
+    startMenu.querySelectorAll('.start-menu-submenu.pinned').forEach(el => el.classList.remove('pinned'));
   }
 });
 

@@ -235,12 +235,14 @@
     z-index: 1002;
 }
 
-.start-menu-submenu:hover > .start-menu-item {
+.start-menu-submenu:hover > .start-menu-item,
+.start-menu-submenu.pinned > .start-menu-item {
     background-color: #000080;
     color: white;
 }
 
-.start-menu-submenu:hover .start-menu-submenu-panel {
+.start-menu-submenu:hover .start-menu-submenu-panel,
+.start-menu-submenu.pinned .start-menu-submenu-panel {
     display: block;
 }
 
