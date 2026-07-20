@@ -1,13 +1,6 @@
 /* Global styles */
 /* (friendly reminder: make it mobile compatible) */
 
-/* Fallback style */
-body {
-  background-color: rgb(255, 255, 255);
-  color: black;
-  font-family: Verdana;
-}
-
 /* Fonts */
 @font-face {
   font-family: 'stat ft';
