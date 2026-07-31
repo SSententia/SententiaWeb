@@ -430,6 +430,28 @@ h1 {
     max-height: 200px;
 }
 
+.media-loading {
+    background: black;
+    min-height: 150px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+    color: #0f0;
+    text-align: center;
+    padding: 20px;
+}
+
+.media-loading-dots::after {
+    content: '...';
+    animation: loading-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loading-dots {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 .media-controls {
     display: flex;
     gap: 5px;

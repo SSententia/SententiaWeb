@@ -792,7 +792,9 @@ function bogolNext() {
     backBtn.disabled = true;
     if (bogolWindow) {
       const closeBtn = bogolWindow.querySelector('.title-bar-controls button[aria-label="Close"]');
+      const helpBtn = bogolWindow.querySelector('.title-bar-controls button[aria-label="Help"]');
       if (closeBtn) closeBtn.style.display = 'none';
+      if (helpBtn) helpBtn.style.display = 'none';
     }
     keyboardMouse.forcedState = 'wait';
     bogolProgressInterval = setInterval(() => animateBogolProgress(progressBar), 120);
@@ -983,6 +985,10 @@ function closeWindow(button) {
     if (status) status.textContent = 'Done';
     browserUpdateNavButtons();
   }
+
+  if (windowDiv && windowDiv.id === 'media-player-window') {
+    mediaStop();
+  }
   if (windowDiv) {
     setTimeout(() => {
       windowDiv.style.display = 'none';
@@ -1148,50 +1154,103 @@ function cancelNotepadClose() {
 
 // MEDIA PLAYER
 let currentMedia = null;
+let yippemedia = false;
 
-function loadMedia() {
-  const url = document.getElementById('media-url').value.trim();
-  if (!url) return;
+function setMediaLoading(loading) {
+  const container = document.getElementById('media-container');
+  const indicator = document.getElementById('media-loading');
+  if (!container || !indicator) return;
+  if (loading) {
+    container.style.display = 'none';
+    indicator.style.display = 'flex';
+  } else {
+    indicator.style.display = 'none';
+    container.style.display = 'flex';
+  }
+}
+
+function loadMedia(url) {
+  const inputUrl = document.getElementById('media-url').value.trim();
+  const mediaUrl = url || inputUrl;
+  if (!mediaUrl) return;
+
+  // If the user typed/pasted a URL, it is not from the desktop
+  if (!url && inputUrl) {
+    yippemedia = false;
+  }
 
   const container = document.getElementById('media-container');
+  setMediaLoading(true);
   container.innerHTML = '';
 
-  const ext = url.split('.').pop().toLowerCase().split('?')[0];
+  const ext = mediaUrl.split('.').pop().toLowerCase().split('?')[0];
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
   const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac'];
   const videoExts = ['mp4', 'webm', 'ogg', 'avi', 'mov'];
 
+  const finish = function (mediaElement, type) {
+    setMediaLoading(false);
+    container.innerHTML = '';
+    if (mediaElement) container.appendChild(mediaElement);
+    if (type === 'audio') {
+      if (yippemedia) {
+        container.innerHTML += '<div class="desktop-audio-notice"><div class="desktop-audio-title">Desktop Audio</div><p>🎵 This audio file came straight from the desktop! That\'s pretty cool, I guess. 🎵</p></div>';
+      } else {
+        container.innerHTML += '<p style="color: #0f0;">♪ Audio loaded ♪</p>';
+      }
+    }
+  };
+
+  const fail = function () {
+    setMediaLoading(false);
+    container.innerHTML = '<span style="color: #f00;">Failed to load media</span>';
+    currentMedia = null;
+  };
+
   if (imageExts.includes(ext)) {
     const img = document.createElement('img');
-    img.src = url;
     img.alt = 'Loaded image';
-    container.appendChild(img);
-    currentMedia = null;
+    img.onload = function () {
+      finish(img, 'image');
+      currentMedia = null;
+    };
+    img.onerror = fail;
+    img.src = mediaUrl;
   } else if (audioExts.includes(ext)) {
     const audio = document.createElement('audio');
-    audio.src = url;
     audio.controls = false;
     audio.volume = globalVolume;
-    container.appendChild(audio);
-    container.innerHTML += '<p style="color: #0f0;">♪ Audio loaded ♪</p>';
-    currentMedia = audio;
+    audio.addEventListener('canplay', function () {
+      finish(audio, 'audio');
+      currentMedia = audio;
+    }, { once: true });
+    audio.addEventListener('error', fail, { once: true });
+    audio.src = mediaUrl;
   } else {
     // Assume video for unknown
     const video = document.createElement('video');
-    video.src = url;
     video.controls = false;
     video.volume = globalVolume;
     video.style.maxWidth = '100%';
     video.style.maxHeight = '200px';
-    container.appendChild(video);
-    currentMedia = video;
+    video.addEventListener('canplay', function () {
+      finish(video, 'video');
+      currentMedia = video;
+    }, { once: true });
+    video.addEventListener('error', fail, { once: true });
+    video.src = mediaUrl;
   }
 }
 
-function openMedia(url) {
+function openMedia(url, fromDesktop = true) {
   openWindow('media-player-window');
-  document.getElementById('media-url').value = url;
-  loadMedia();
+  yippemedia = fromDesktop;
+  if (fromDesktop) {
+    document.getElementById('media-url').value = '';
+  } else {
+    document.getElementById('media-url').value = url;
+  }
+  loadMedia(url);
 }
 
 function mediaPlay() {
@@ -1394,11 +1453,13 @@ function removeVirus() {
   const blackOverlay = document.getElementById('black-overlay');
   if (blackOverlay) blackOverlay.style.display = 'none';
 
-  // Stop youtube video
-  const iframe = document.querySelector('#rickroll-overlay iframe');
-  const tempSrc = iframe.src;
-  iframe.src = '';
-  iframe.src = tempSrc;
+  // Stop and remove youtube iframe to free memory
+  const rickrollOverlay = document.getElementById('rickroll-overlay');
+  const iframe = rickrollOverlay.querySelector('iframe');
+  if (iframe) {
+    iframe.src = 'about:blank';
+    iframe.remove();
+  }
 
   // Stop flying windows
   activeIntervals.forEach(int => clearInterval(int));
@@ -1566,7 +1627,18 @@ function ransomware() {
 }
 
 function rickroll() {
-  document.getElementById('rickroll-overlay').style.display = 'block';
+  const overlay = document.getElementById('rickroll-overlay');
+  if (!overlay.querySelector('iframe')) {
+    const iframe = document.createElement('iframe');
+    iframe.width = '100%';
+    iframe.height = '100%';
+    iframe.src = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&loop=1&playlist=dQw4w9WgXcQ';
+    iframe.frameBorder = '0';
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    overlay.appendChild(iframe);
+  }
+  overlay.style.display = 'block';
 }
 
 document.addEventListener('keydown', function (e) {
