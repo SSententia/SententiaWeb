@@ -728,10 +728,51 @@
   <!-- rickroll overlay (iframe injected lazily on first trigger) -->
   <div id="rickroll-overlay"></div>
 
-  <!-- shutdown overlay -->
-  <div id="shutdown-overlay">
+  <!-- shutdown and reboot overlay -->
+  <div id="shutdown-overlay" role="dialog" aria-modal="true" aria-labelledby="shutdown-dialog-title">
     <div id="shutdown-message" style="display: none;">
-      <h1 style="color: #ffaa00; font-size: 24px;">It's now safe to turn off your computer.</h1>
+      <h1 id="shutdown-dialog-title" style="color: #ffaa00; font-size: 24px;">It's now safe to turn off your computer.</h1>
+      <button id="reboot-button" type="button" onclick="startReboot()">Reboot</button>
+    </div>
+
+    <div id="reboot-sequence" tabindex="-1" aria-live="polite" aria-atomic="true">
+      <section id="boot-stage" class="reboot-stage" aria-labelledby="boot-stage-title">
+        <h1 id="boot-stage-title">Wind-down 98b</h1>
+        <p class="reboot-status" id="boot-status">Checking memory...</p>
+        <p class="reboot-status">Copyright (c) 1998+27 Wind-down Systems</p>
+      </section>
+
+      <section id="load-stage" class="reboot-stage" aria-labelledby="load-stage-title">
+        <h1 id="load-stage-title">Starting Wind-down 98b</h1>
+        <p class="reboot-status" id="load-status">Loading system files...</p>
+        <div class="reboot-progress" role="progressbar" aria-label="Operating system load progress" aria-valuemin="0"
+          aria-valuemax="100" aria-valuenow="0">
+          <span id="load-progress"></span>
+        </div>
+      </section>
+
+      <section id="login-stage" class="reboot-stage" aria-labelledby="login-stage-title">
+        <div class="window reboot-login">
+          <div class="title-bar">
+            <div class="title-bar-text" id="login-stage-title">Log On to Wind-down 98b</div>
+          </div>
+          <form class="window-body" id="login-form" onsubmit="finishReboot(event)">
+            <p>Enter a user name and password to begin.</p>
+            <div class="field-row-stacked">
+              <label for="login-user">User name:</label>
+              <input id="login-user" name="username" type="text" autocomplete="username" required>
+            </div>
+            <div class="field-row-stacked">
+              <label for="login-password">Password:</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <p id="login-status" class="reboot-status" role="status"></p>
+            <div class="reboot-login-actions">
+              <button class="default" type="submit">Log On</button>
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
   </div>
 

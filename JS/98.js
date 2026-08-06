@@ -948,14 +948,398 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-// SHUTDOWN
-function shutdown() {
+// SHUTDOWN AND REBOOT
+let shutdownTimer = null;
+let rebootTimers = [];
+let rebootProgressInterval = null;
+let rebootSnapshot = null;
+let rebootActive = false;
+let rebootFinishing = false;
+
+const rebootEffectClasses = [
+  'shake-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less',
+  'unrecognizable', 'invert-effect', 'color-downgrade', 'blurry', 'monochrome',
+  'high-contrast-effect', 'high-brightness-effect', 'big-text-effect'
+];
+
+function clearRebootTimers() {
+  rebootTimers.forEach(timer => clearTimeout(timer));
+  rebootTimers = [];
+  if (rebootProgressInterval !== null) {
+    clearInterval(rebootProgressInterval);
+    rebootProgressInterval = null;
+  }
+}
+
+function rebootTimeout(callback, delay) {
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const timer = setTimeout(() => {
+    rebootTimers = rebootTimers.filter(activeTimer => activeTimer !== timer);
+    callback();
+  }, reducedMotion ? Math.min(delay, 120) : delay);
+  rebootTimers.push(timer);
+  return timer;
+}
+
+function snapshotSettings() {
+  const wrapper = document.getElementById('desktop-wrapper');
+  const cursorStyle = document.getElementById('custom-cursor-style');
+  const cursorWarning = document.getElementById('cursor-warning');
+  const mouseWarning = document.getElementById('mouse-warning');
+  const volumeSlider = document.getElementById('volume-slider');
+  const volumeLabel = document.getElementById('volume-label');
+  const mouseDevice = document.getElementById('mouse-device-select');
+  const settingsRadios = {};
+
+  document.querySelectorAll('input[id^="S-"]').forEach(input => {
+    settingsRadios[input.id] = input.checked;
+  });
+
+  return {
+    targetClasses: EFFECT_TARGETS.reduce((state, id) => {
+      const element = document.getElementById(id);
+      state[id] = element ? element.className : '';
+      return state;
+    }, {}),
+    wrapperStyle: wrapper ? wrapper.style.cssText : '',
+    bodyClass: document.body.className,
+    bodyStyle: document.body.style.cssText,
+    htmlStyle: document.documentElement.style.cssText,
+    cursorStyle: cursorStyle ? cursorStyle.textContent : '',
+    cursorUrl: document.getElementById('cursor-url')?.value || '',
+    cursorWarning: cursorWarning ? {
+      text: cursorWarning.textContent,
+      display: cursorWarning.style.display,
+      color: cursorWarning.style.color
+    } : null,
+    mouseWarning: mouseWarning ? {
+      text: mouseWarning.textContent,
+      display: mouseWarning.style.display,
+      color: mouseWarning.style.color
+    } : null,
+    settingsRadios,
+    wallpaperUrl: document.getElementById('wallpaper-url')?.value || '',
+    volume: volumeSlider ? volumeSlider.value : '50',
+    globalVolume,
+    volumeLabel: volumeLabel ? volumeLabel.textContent : '50%',
+    mouseDevice: mouseDevice ? mouseDevice.value : 'mouse',
+    mouseTrailActive,
+    keyboardMouseEnabled: keyboardMouse.enabled,
+    keyboardMousePosition: { x: keyboardMouse.x, y: keyboardMouse.y },
+    vgaEjected,
+    narratorEnabled,
+    stickyKeysEnabled,
+    magnifierEnabled,
+    highContrastEnabled,
+    highBrightnessEnabled,
+    bigTextEnabled,
+    bigCursorEnabled,
+    jsLessActive
+  };
+}
+
+function stopMouseTrail() {
+  mouseTrailActive = false;
+  document.removeEventListener('mousemove', addTrailDot);
+  document.querySelectorAll('.mouse-trail-dot').forEach(dot => dot.remove());
+}
+
+function applyRebootDefaults() {
+  EFFECT_TARGETS.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.classList.remove(...rebootEffectClasses);
+  });
+
+  const wrapper = document.getElementById('desktop-wrapper');
+  if (wrapper) wrapper.style.cssText = '';
+  document.body.classList.remove('js-less', 'big-cursor-hidden', 'kb-cursor-hidden');
+  document.body.style.transform = '';
+  document.body.style.transformOrigin = '';
+  document.documentElement.style.overflow = '';
+
+  if (keyboardMouse.enabled) disableKeyboardMouse();
+  stopMouseTrail();
+  keyboardMouse.forcedState = null;
+
+  if (narratorAudio) {
+    narratorAudio.pause();
+    narratorAudio.currentTime = 0;
+  }
+  narratorEnabled = false;
+  stickyKeysEnabled = false;
+  stickyKeysDialogShown = false;
+  magnifierEnabled = false;
+  highContrastEnabled = false;
+  highBrightnessEnabled = false;
+  bigTextEnabled = false;
+  bigCursorEnabled = false;
+  if (bigCursorEl) bigCursorEl.style.display = 'none';
+  document.body.classList.remove('big-cursor-hidden');
+  document.removeEventListener('mousemove', bigCursorFollow);
+
+  if (vgaEjectTimeout !== null) {
+    clearTimeout(vgaEjectTimeout);
+    vgaEjectTimeout = null;
+  }
+  vgaEjected = false;
+  const vgaOverlay = document.getElementById('vga-overlay');
+  if (vgaOverlay) vgaOverlay.style.display = 'none';
+
+  toggleJSLess(false);
+  const customCursorStyle = document.getElementById('custom-cursor-style');
+  if (customCursorStyle) customCursorStyle.textContent = '';
+  const cursorUrl = document.getElementById('cursor-url');
+  if (cursorUrl) cursorUrl.value = '';
+  const wallpaperUrl = document.getElementById('wallpaper-url');
+  if (wallpaperUrl) wallpaperUrl.value = '';
+  setCursorWarning('');
+  setMouseWarning('');
+  const defaultRadios = ['S-fradio1', 'S-csradio1', 'S-jsradio1', 'S-cradio2'];
+  document.querySelectorAll('input[id^="S-"]').forEach(input => {
+    input.checked = defaultRadios.includes(input.id);
+  });
+
+  const mouseDevice = document.getElementById('mouse-device-select');
+  if (mouseDevice) mouseDevice.value = 'mouse';
+  const startMenu = document.getElementById('start-menu');
+  const startButton = document.getElementById('start-button');
+  if (startMenu) startMenu.style.display = 'none';
+  if (startButton) startButton.classList.remove('active');
+  setGlobalVolume(50);
+}
+
+function restoreSettings(snapshot) {
+  if (!snapshot) return;
+
+  if (keyboardMouse.enabled) disableKeyboardMouse();
+  stopMouseTrail();
+  if (narratorAudio) {
+    narratorAudio.pause();
+    narratorAudio.currentTime = 0;
+  }
+  if (vgaEjectTimeout !== null) {
+    clearTimeout(vgaEjectTimeout);
+    vgaEjectTimeout = null;
+  }
+  const vgaOverlay = document.getElementById('vga-overlay');
+  if (vgaOverlay) vgaOverlay.style.display = 'none';
+
+  // Restore the captured DOM first. Dynamic settings below may then add their
+  // listeners and generated UI without being overwritten by these snapshots.
+  EFFECT_TARGETS.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.className = snapshot.targetClasses[id];
+  });
+  const wrapper = document.getElementById('desktop-wrapper');
+  if (wrapper) wrapper.style.cssText = snapshot.wrapperStyle;
+  document.body.className = snapshot.bodyClass;
+  document.body.style.cssText = snapshot.bodyStyle;
+  document.documentElement.style.cssText = snapshot.htmlStyle;
+
+  const cursorStyle = document.getElementById('custom-cursor-style');
+  if (cursorStyle) cursorStyle.textContent = snapshot.cursorStyle;
+  const cursorUrl = document.getElementById('cursor-url');
+  if (cursorUrl) cursorUrl.value = snapshot.cursorUrl;
+  const wallpaperUrl = document.getElementById('wallpaper-url');
+  if (wallpaperUrl) wallpaperUrl.value = snapshot.wallpaperUrl;
+  document.querySelectorAll('input[id^="S-"]').forEach(input => {
+    input.checked = !!snapshot.settingsRadios[input.id];
+  });
+  const mouseDevice = document.getElementById('mouse-device-select');
+  if (mouseDevice) mouseDevice.value = snapshot.mouseDevice;
+
+  globalVolume = snapshot.globalVolume;
+  const volumeSlider = document.getElementById('volume-slider');
+  if (volumeSlider) volumeSlider.value = snapshot.volume;
+  document.querySelectorAll('audio, video').forEach(media => {
+    media.volume = globalVolume;
+  });
+  const volumeLabel = document.getElementById('volume-label');
+  if (volumeLabel) volumeLabel.textContent = snapshot.volumeLabel;
+  if (narratorAudio) narratorAudio.volume = globalVolume;
+  if (stickyKeysSound) stickyKeysSound.volume = globalVolume;
+
+  // Reapply behavior that needs listeners, generated elements, or inline state.
+  narratorEnabled = false;
+  if (snapshot.narratorEnabled) EnableNarrator();
+  stickyKeysEnabled = snapshot.stickyKeysEnabled;
+  stickyKeysDialogShown = false;
+  magnifierEnabled = false;
+  if (snapshot.magnifierEnabled) EnableZoom();
+  highContrastEnabled = snapshot.highContrastEnabled;
+  highBrightnessEnabled = snapshot.highBrightnessEnabled;
+  bigTextEnabled = snapshot.bigTextEnabled;
+  bigCursorEnabled = false;
+  if (snapshot.bigCursorEnabled) EnableBigcur();
+  jsLessActive = snapshot.jsLessActive;
+
+  keyboardMouse.x = snapshot.keyboardMousePosition.x;
+  keyboardMouse.y = snapshot.keyboardMousePosition.y;
+  if (snapshot.keyboardMouseEnabled) enableKeyboardMouse();
+  if (snapshot.mouseTrailActive) {
+    mouseTrailActive = true;
+    document.addEventListener('mousemove', addTrailDot);
+  }
+  vgaEjected = false;
+  if (snapshot.vgaEjected) Blackscreen();
+
+  const cursorWarning = document.getElementById('cursor-warning');
+  if (cursorWarning && snapshot.cursorWarning) {
+    cursorWarning.textContent = snapshot.cursorWarning.text;
+    cursorWarning.style.display = snapshot.cursorWarning.display;
+    cursorWarning.style.color = snapshot.cursorWarning.color;
+  }
+  const mouseWarning = document.getElementById('mouse-warning');
+  if (mouseWarning && snapshot.mouseWarning) {
+    mouseWarning.textContent = snapshot.mouseWarning.text;
+    mouseWarning.style.display = snapshot.mouseWarning.display;
+    mouseWarning.style.color = snapshot.mouseWarning.color;
+  }
+}
+
+function showRebootStage(stageId) {
+  document.querySelectorAll('#reboot-sequence .reboot-stage').forEach(stage => {
+    stage.classList.toggle('is-active', stage.id === stageId);
+  });
+  const overlay = document.getElementById('shutdown-overlay');
+  if (overlay) {
+    overlay.classList.toggle('load-mode', stageId === 'load-stage');
+    overlay.classList.toggle('login-mode', stageId === 'login-stage');
+  }
+}
+
+function resetRebootOverlay() {
+  clearRebootTimers();
+  rebootActive = false;
+  rebootFinishing = false;
+  rebootSnapshot = null;
   const overlay = document.getElementById('shutdown-overlay');
   const message = document.getElementById('shutdown-message');
+  const sequence = document.getElementById('reboot-sequence');
+  if (overlay) {
+    overlay.classList.remove('rebooting');
+    overlay.style.display = 'none';
+  }
+  if (message) message.style.display = 'none';
+  if (sequence) {
+    sequence.classList.remove('cursor-hidden');
+    sequence.style.display = 'none';
+  }
+  document.body.classList.remove('reboot-cursor-hidden');
+  document.getElementById('desktop-wrapper')?.removeAttribute('inert');
+  document.getElementById('taskbar')?.removeAttribute('inert');
+  document.getElementById('start-menu')?.removeAttribute('inert');
+  showRebootStage('');
+  const progress = document.getElementById('load-progress');
+  if (progress) {
+    progress.style.width = '0%';
+    progress.parentElement?.setAttribute('aria-valuenow', '0');
+  }
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) loginForm.reset();
+  const loginButton = loginForm?.querySelector('button[type="submit"]');
+  if (loginButton) loginButton.disabled = false;
+  const loginStatus = document.getElementById('login-status');
+  if (loginStatus) loginStatus.textContent = '';
+}
+
+function shutdown() {
+  if (rebootActive) return;
+  clearRebootTimers();
+  if (shutdownTimer !== null) {
+    clearTimeout(shutdownTimer);
+    shutdownTimer = null;
+  }
+  const overlay = document.getElementById('shutdown-overlay');
+  const message = document.getElementById('shutdown-message');
+  const sequence = document.getElementById('reboot-sequence');
+  if (!overlay || !message) return;
+  overlay.classList.remove('rebooting');
   overlay.style.display = 'flex';
-  setTimeout(() => {
+  message.style.display = 'none';
+  if (sequence) sequence.style.display = 'none';
+  showRebootStage('');
+  shutdownTimer = setTimeout(() => {
     message.style.display = 'block';
+    shutdownTimer = null;
   }, 2000);
+}
+
+function startReboot() {
+  if (rebootActive) return;
+  if (shutdownTimer !== null) {
+    clearTimeout(shutdownTimer);
+    shutdownTimer = null;
+  }
+  const overlay = document.getElementById('shutdown-overlay');
+  const message = document.getElementById('shutdown-message');
+  const sequence = document.getElementById('reboot-sequence');
+  if (!overlay || !message || !sequence) return;
+
+  rebootActive = true;
+  rebootSnapshot = snapshotSettings();
+  applyRebootDefaults();
+  overlay.classList.add('rebooting');
+  message.style.display = 'none';
+  sequence.style.display = 'block';
+  sequence.classList.add('cursor-hidden');
+  document.body.classList.add('reboot-cursor-hidden');
+  document.getElementById('desktop-wrapper')?.setAttribute('inert', '');
+  document.getElementById('taskbar')?.setAttribute('inert', '');
+  document.getElementById('start-menu')?.setAttribute('inert', '');
+  showRebootStage('boot-stage');
+
+  const bootStatus = document.getElementById('boot-status');
+  if (bootStatus) bootStatus.textContent = 'Checking memory...';
+  rebootTimeout(() => {
+    if (bootStatus) bootStatus.textContent = 'Memory test: 640K OK';
+  }, 350);
+  rebootTimeout(() => {
+    showRebootStage('load-stage');
+    const loadStatus = document.getElementById('load-status');
+    if (loadStatus) loadStatus.textContent = 'Loading system files...';
+    const progress = document.getElementById('load-progress');
+    const progressBar = progress?.parentElement;
+    let value = 0;
+    rebootProgressInterval = setInterval(() => {
+      value = Math.min(value + 8, 100);
+      if (progress) progress.style.width = value + '%';
+      if (progressBar) progressBar.setAttribute('aria-valuenow', String(value));
+      if (loadStatus && value >= 64) loadStatus.textContent = 'Starting desktop services...';
+    }, window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 40 : 120);
+  }, 850);
+  rebootTimeout(() => {
+    if (rebootProgressInterval !== null) {
+      clearInterval(rebootProgressInterval);
+      rebootProgressInterval = null;
+    }
+    const progress = document.getElementById('load-progress');
+    if (progress) progress.style.width = '100%';
+    const progressBar = progress?.parentElement;
+    if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
+    showRebootStage('login-stage');
+    const loginStatus = document.getElementById('login-status');
+    if (loginStatus) loginStatus.textContent = 'System ready.';
+    document.getElementById('login-user')?.focus();
+  }, 2500);
+}
+
+function finishReboot(event) {
+  event.preventDefault();
+  if (!rebootActive || rebootFinishing) return;
+  rebootFinishing = true;
+  const loginButton = event.target.querySelector('button[type="submit"]');
+  const loginStatus = document.getElementById('login-status');
+  if (loginButton) loginButton.disabled = true;
+  if (loginStatus) loginStatus.textContent = 'Logging on...';
+  rebootTimeout(() => {
+    const snapshot = rebootSnapshot;
+    clearRebootTimers();
+    const overlay = document.getElementById('shutdown-overlay');
+    if (overlay) overlay.style.display = 'none';
+    restoreSettings(snapshot);
+    resetRebootOverlay();
+  }, 250);
 }
 
 // WINDOW MANAGEMENT
