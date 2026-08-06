@@ -356,29 +356,42 @@ button {
     margin-top: 16px;
 }
 
-#reboot-sequence {
-    display: none;
-    width: min(100%, 560px);
+@font-face {
+    font-family: 'Award BIOS';
+    src: url('../LOCAL/FONTS/bios.woff') format('woff');
+    font-display: block;
 }
 
-#shutdown-overlay.rebooting.load-mode {
-    background: #000080;
+#reboot-sequence {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+#shutdown-overlay.rebooting.bios-mode {
+    background: #000;
+}
+
+#shutdown-overlay.rebooting.windows-mode {
+    background: #060b27;
 }
 
 #shutdown-overlay.rebooting.login-mode {
     background: #008080;
 }
 
-#shutdown-overlay.rebooting,
-#shutdown-overlay.rebooting * ,
-.reboot-cursor-hidden,
-.reboot-cursor-hidden * {
+body.reboot-cursor-hidden,
+body.reboot-cursor-hidden * ,
+#reboot-sequence.cursor-hidden,
+#reboot-sequence.cursor-hidden * {
     cursor: none !important;
 }
 
 .reboot-stage {
     display: none;
     min-height: 180px;
+    width: 100%;
+    height: 100%;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -388,45 +401,135 @@ button {
     display: flex;
 }
 
-.reboot-stage h1 {
-    margin: 0 0 18px;
-    color: #ffaa00;
-    font-family: "Courier New", Courier, monospace;
-    font-size: clamp(22px, 5vw, 34px);
+.bios-stage {
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: hidden;
+    color: #c0c0c0;
+    font-family: 'Award BIOS', monospace;
+    font-size: clamp(12px, 1.8vw, 20px);
+    letter-spacing: 0.02em;
+    text-align: left;
 }
 
-.reboot-status {
-    min-height: 14px;
-    margin: 6px 0;
-    color: #ffaa00;
-    font-family: "Courier New", Courier, monospace;
+.bios-screen {
+    box-sizing: border-box;
+    width: min(100%, 980px);
+    min-height: 100%;
+    padding: 5vh 4vw 3vh;
+    text-shadow: 0 0 1px currentColor;
 }
 
-#load-stage {
-    color: white;
+.bios-line {
+    min-height: 1.2em;
+    margin: 0;
+    white-space: pre-wrap;
 }
 
-#load-stage h1 {
-    color: white;
-    font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
-    font-size: 24px;
+.bios-brand {
+    color: #f0f0f0;
 }
 
-.reboot-progress {
-    width: min(100%, 360px);
-    height: 18px;
-    margin-top: 14px;
-    padding: 2px;
-    background: white;
-    border: 2px inset #c0c0c0;
+.bios-gap {
+    margin-top: 2.4em;
 }
 
-#load-progress {
+.bios-footer {
+    margin-top: 18vh;
+}
+
+.bios-ok {
+    color: #80ff80;
+}
+
+.post-line {
+    visibility: hidden;
+}
+
+.windows-stage {
+    position: relative;
+    box-sizing: border-box;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #8ebbe3;
+    background-image: var(--windows-boot-background, none);
+    color: #111;
+    font-family: Arial, sans-serif;
+}
+
+.windows-stage[data-background-image]:not([data-background-image=""]) {
+    --windows-boot-background: var(--windows-boot-image);
+}
+
+.windows-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.52), rgba(108,166,211,.35) 48%, rgba(39,101,159,.65));
+}
+
+.windows-boot-art,
+#windows-title,
+.windows-status,
+.windows-progress {
+    position: relative;
+    z-index: 1;
+}
+
+.windows-boot-art {
+    display: grid;
+    grid-template-columns: 52px 52px;
+    grid-template-rows: 52px 52px;
+    gap: 4px;
+    margin-bottom: 20px;
+    transform: skewY(-10deg) rotate(-8deg);
+    filter: drop-shadow(5px 6px 2px rgba(0,0,0,.3));
+}
+
+.windows-pane {
+    display: block;
+    border: 3px solid #111;
+    border-radius: 2px 14px 2px 14px;
+}
+
+.pane-red { background: #ed4b32; }
+.pane-green { background: #69b84b; }
+.pane-blue { background: #367bc1; }
+.pane-yellow { background: #f1c62b; }
+
+#windows-title {
+    margin: 0;
+    color: #111;
+    font-family: Arial, sans-serif;
+    font-size: clamp(24px, 5vw, 44px);
+    font-weight: 400;
+    letter-spacing: -0.08em;
+}
+
+.windows-status {
+    margin: 12px 0 0;
+    font-size: 13px;
+}
+
+.windows-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: #1c385f;
+    border-top: 2px solid rgba(255,255,255,.7);
+}
+
+#windows-stage #load-progress {
     display: block;
     width: 0;
     height: 100%;
-    background: #000080;
-    transition: width 100ms steps(4, end);
+    background: linear-gradient(90deg, #102a72 0%, #2b8bd5 45%, #dff7ff 52%, #2b8bd5 62%, #102a72 100%);
+    background-size: 180px 100%;
+    box-shadow: 0 0 7px rgba(255,255,255,.8);
+    transition: width 120ms linear;
 }
 
 #login-stage {
@@ -462,9 +565,8 @@ button {
     color: #800000;
 }
 
-
 @media (prefers-reduced-motion: reduce) {
-    #load-progress {
+    #windows-stage #load-progress {
         transition: none;
     }
 }
@@ -476,6 +578,10 @@ button {
 
     .reboot-stage {
         min-height: 160px;
+    }
+
+    .bios-screen {
+        padding: 3vh 3vw 2vh;
     }
 }
 
@@ -949,8 +1055,15 @@ h1 {
 
 #sticky-keys-dialog {
     position: fixed !important;
-    z-index: 25000 !important;
+    z-index: 1000001 !important;
     width: 350px;
+    pointer-events: auto !important;
+}
+
+#sticky-keys-dialog button,
+#sticky-keys-dialog .title-bar,
+#sticky-keys-dialog .window-body {
+    pointer-events: auto !important;
 }
 
 .mouse-trail-dot {

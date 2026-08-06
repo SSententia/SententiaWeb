@@ -442,6 +442,7 @@ let stickyKeysEnabled = false;
 let stickyKeysDialogShown = false;
 let stickyKeysSound = null;
 let stickyKeysKeyTimes = [];
+let stickyKeysPreviousFocus = null;
 let magnifierEnabled = false;
 let highContrastEnabled = false;
 let highBrightnessEnabled = false;
@@ -509,17 +510,27 @@ function EnableSticky() {
   }
 }
 
+function restoreStickyKeysFocus() {
+  const previousFocus = stickyKeysPreviousFocus;
+  stickyKeysPreviousFocus = null;
+  if (previousFocus && document.contains(previousFocus) && typeof previousFocus.focus === 'function') {
+    previousFocus.focus();
+  }
+}
+
 function showStickyKeysDialog() {
   if (stickyKeysDialogShown) return;
   stickyKeysDialogShown = true;
+  stickyKeysPreviousFocus = document.activeElement;
   var dialog = document.getElementById('sticky-keys-dialog');
   if (dialog) {
     if (!dialog.style.top) {
       dialog.style.top = Math.floor((window.innerHeight - 200) / 2) + 'px';
-      dialog.style.left = Math.floor((window.innerWidth - 350) / 2) + 'px';
+      dialog.style.left = Math.floor((window.innerWidth - 200) / 2) + 'px';
     }
     dialog.style.display = 'block';
     dialog.style.zIndex = highestZIndex++;
+    requestAnimationFrame(() => dialog.querySelector('button')?.focus());
   }
 }
 
@@ -528,6 +539,7 @@ function activateStickyKeys() {
   stickyKeysDialogShown = false;
   var dialog = document.getElementById('sticky-keys-dialog');
   if (dialog) dialog.style.display = 'none';
+  restoreStickyKeysFocus();
   if (!stickyKeysSound) {
     stickyKeysSound = document.createElement('audio');
     stickyKeysSound.preload = 'auto';
@@ -542,11 +554,14 @@ function dismissStickyKeys() {
   stickyKeysDialogShown = false;
   var dialog = document.getElementById('sticky-keys-dialog');
   if (dialog) dialog.style.display = 'none';
+  restoreStickyKeysFocus();
 }
 
 // Track repeated key presses for Sticky Keys
 document.addEventListener('keydown', function (e) {
   if (jsLessActive) return;
+  const loginStageActive = document.getElementById('login-stage')?.classList.contains('is-active');
+  if (rebootActive && !loginStageActive) return;
   if (!e.repeat) {
     var now = Date.now();
     stickyKeysKeyTimes.push(now);
@@ -956,6 +971,21 @@ let rebootSnapshot = null;
 let rebootActive = false;
 let rebootFinishing = false;
 
+// Keep these values together so future POST/load sound cues can be synced easily.
+const REBOOT_TIMINGS = {
+  shutdownReveal: 2000,
+  awardBiosDuration: 5200,
+  awardMemoryInterval: 260,
+  postLineInterval: 900,
+  postHold: 1800,
+  windowsStartDelay: 900,
+  windowsLoadDuration: 12000,
+  windowsProgressInterval: 120,
+  windowsEndPause: 1800,
+  loginReadyDelay: 450,
+  finishDelay: 500
+};
+
 const rebootEffectClasses = [
   'shake-effect', 'glitch-effect', 'barrel-roll', 'hue-spin', 'css-less',
   'unrecognizable', 'invert-effect', 'color-downgrade', 'blurry', 'monochrome',
@@ -1068,6 +1098,9 @@ function applyRebootDefaults() {
   narratorEnabled = false;
   stickyKeysEnabled = false;
   stickyKeysDialogShown = false;
+  stickyKeysPreviousFocus = null;
+  const stickyDialog = document.getElementById('sticky-keys-dialog');
+  if (stickyDialog) stickyDialog.style.display = 'none';
   magnifierEnabled = false;
   highContrastEnabled = false;
   highBrightnessEnabled = false;
@@ -1202,10 +1235,16 @@ function showRebootStage(stageId) {
     stage.classList.toggle('is-active', stage.id === stageId);
   });
   const overlay = document.getElementById('shutdown-overlay');
+  const sequence = document.getElementById('reboot-sequence');
   if (overlay) {
-    overlay.classList.toggle('load-mode', stageId === 'load-stage');
+    overlay.classList.toggle('bios-mode', stageId === 'award-bios-stage' || stageId === 'post-stage');
+    overlay.classList.toggle('windows-mode', stageId === 'windows-stage');
     overlay.classList.toggle('login-mode', stageId === 'login-stage');
   }
+  if (sequence) {
+    sequence.classList.toggle('cursor-hidden', stageId !== 'login-stage' && stageId !== '');
+  }
+  document.body.classList.toggle('reboot-cursor-hidden', stageId !== 'login-stage' && stageId !== '');
 }
 
 function resetRebootOverlay() {
@@ -1235,6 +1274,9 @@ function resetRebootOverlay() {
     progress.style.width = '0%';
     progress.parentElement?.setAttribute('aria-valuenow', '0');
   }
+  document.querySelectorAll('#post-lines .post-line').forEach(line => {
+    line.style.visibility = 'hidden';
+  });
   const loginForm = document.getElementById('login-form');
   if (loginForm) loginForm.reset();
   const loginButton = loginForm?.querySelector('button[type="submit"]');
@@ -1262,7 +1304,7 @@ function shutdown() {
   shutdownTimer = setTimeout(() => {
     message.style.display = 'block';
     shutdownTimer = null;
-  }, 2000);
+  }, REBOOT_TIMINGS.shutdownReveal);
 }
 
 function startReboot() {
@@ -1282,46 +1324,70 @@ function startReboot() {
   overlay.classList.add('rebooting');
   message.style.display = 'none';
   sequence.style.display = 'block';
-  sequence.classList.add('cursor-hidden');
-  document.body.classList.add('reboot-cursor-hidden');
   document.getElementById('desktop-wrapper')?.setAttribute('inert', '');
   document.getElementById('taskbar')?.setAttribute('inert', '');
   document.getElementById('start-menu')?.setAttribute('inert', '');
-  showRebootStage('boot-stage');
 
-  const bootStatus = document.getElementById('boot-status');
-  if (bootStatus) bootStatus.textContent = 'Checking memory...';
-  rebootTimeout(() => {
-    if (bootStatus) bootStatus.textContent = 'Memory test: 640K OK';
-  }, 350);
-  rebootTimeout(() => {
-    showRebootStage('load-stage');
-    const loadStatus = document.getElementById('load-status');
-    if (loadStatus) loadStatus.textContent = 'Loading system files...';
-    const progress = document.getElementById('load-progress');
-    const progressBar = progress?.parentElement;
-    let value = 0;
-    rebootProgressInterval = setInterval(() => {
-      value = Math.min(value + 8, 100);
-      if (progress) progress.style.width = value + '%';
-      if (progressBar) progressBar.setAttribute('aria-valuenow', String(value));
-      if (loadStatus && value >= 64) loadStatus.textContent = 'Starting desktop services...';
-    }, window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 40 : 120);
-  }, 850);
-  rebootTimeout(() => {
-    if (rebootProgressInterval !== null) {
-      clearInterval(rebootProgressInterval);
-      rebootProgressInterval = null;
+  const biosMemory = document.getElementById('bios-memory');
+  let memoryValue = 0;
+  const memorySteps = Math.max(1, Math.floor(REBOOT_TIMINGS.awardBiosDuration / REBOOT_TIMINGS.awardMemoryInterval));
+  const memoryIncrement = Math.ceil(65536 / memorySteps);
+  const postLines = Array.from(document.querySelectorAll('#post-lines .post-line'));
+  postLines.forEach(line => { line.style.visibility = 'hidden'; });
+  const progress = document.getElementById('load-progress');
+  if (progress) progress.style.width = '0%';
+  if (progress?.parentElement) progress.parentElement.setAttribute('aria-valuenow', '0');
+
+  showRebootStage('award-bios-stage');
+  const updateMemory = step => {
+    memoryValue = Math.min(65536, memoryValue + memoryIncrement);
+    if (biosMemory) biosMemory.textContent = String(memoryValue).padStart(6, '0') + 'K';
+    if (step < memorySteps) {
+      rebootTimeout(() => updateMemory(step + 1), REBOOT_TIMINGS.awardMemoryInterval);
     }
-    const progress = document.getElementById('load-progress');
-    if (progress) progress.style.width = '100%';
-    const progressBar = progress?.parentElement;
-    if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
-    showRebootStage('login-stage');
-    const loginStatus = document.getElementById('login-status');
-    if (loginStatus) loginStatus.textContent = 'System ready.';
-    document.getElementById('login-user')?.focus();
-  }, 2500);
+  };
+  updateMemory(1);
+
+  rebootTimeout(() => {
+    showRebootStage('post-stage');
+    const revealPostLine = index => {
+      if (postLines[index]) postLines[index].style.visibility = 'visible';
+      if (index + 1 < postLines.length) {
+        rebootTimeout(() => revealPostLine(index + 1), REBOOT_TIMINGS.postLineInterval);
+      } else {
+        rebootTimeout(beginWindowsStage, REBOOT_TIMINGS.postHold);
+      }
+    };
+    revealPostLine(0);
+  }, REBOOT_TIMINGS.awardBiosDuration);
+
+  function beginWindowsStage() {
+    showRebootStage('windows-stage');
+    const status = document.getElementById('windows-status');
+    if (status) status.textContent = 'Starting Windows...';
+    rebootTimeout(() => {
+      let value = 0;
+      const progressBar = progress?.parentElement;
+      const interval = Math.max(20, REBOOT_TIMINGS.windowsProgressInterval);
+      const increment = 100 * interval / REBOOT_TIMINGS.windowsLoadDuration;
+      rebootProgressInterval = setInterval(() => {
+        value = Math.min(100, value + increment);
+        if (progress) progress.style.width = value + '%';
+        if (progressBar) progressBar.setAttribute('aria-valuenow', String(Math.round(value)));
+        if (status && value >= 65) status.textContent = 'Loading system components...';
+        if (value >= 100) {
+          clearInterval(rebootProgressInterval);
+          rebootProgressInterval = null;
+          rebootTimeout(() => {
+            showRebootStage('login-stage');
+            const loginStatus = document.getElementById('login-status');
+            if (loginStatus) loginStatus.textContent = 'System ready.';
+            document.getElementById('login-user')?.focus();
+          }, REBOOT_TIMINGS.windowsEndPause + REBOOT_TIMINGS.loginReadyDelay);
+        }
+      }, interval);
+    }, REBOOT_TIMINGS.windowsStartDelay);
+  }
 }
 
 function finishReboot(event) {
@@ -1339,7 +1405,7 @@ function finishReboot(event) {
     if (overlay) overlay.style.display = 'none';
     restoreSettings(snapshot);
     resetRebootOverlay();
-  }, 250);
+  }, REBOOT_TIMINGS.finishDelay);
 }
 
 // WINDOW MANAGEMENT

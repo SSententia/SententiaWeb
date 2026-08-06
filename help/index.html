@@ -609,24 +609,24 @@
       </div>
     </div>
 
-    <!-- sticky keys dialog -->
-    <div class="window" style="position: fixed !important; display: none; width: 350px; z-index: 25000;" id="sticky-keys-dialog">
-      <div class="title-bar">
-        <div class="title-bar-text">STOP!!! YOU ARE TYPING TOO FAST!!!</div>
-        <div class="title-bar-controls">
-          <button aria-label="Close" onclick="dismissStickyKeys()"></button>
-        </div>
-      </div>
-      <div class="window-body" style="padding: 15px; text-align: center;">
-        <p>In this particularly concerning manner, and for your well-being, we recommend enabling Sticky Keys in an effort to slow you down.</p>
-        <p style="margin-top: 10px;">Do you want to enable Sticky Keys? (we'll put slime on your keyboard, by the way)</p>
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-          <button onclick="activateStickyKeys()">Yes</button>
-          <button onclick="dismissStickyKeys()">No</button>
-        </div>
+  </div>
+
+  <!-- sticky keys dialog stays outside the inert desktop subtree so it remains interactive -->
+  <div class="window" style="position: fixed !important; display: none; width: 350px; z-index: 25000;" id="sticky-keys-dialog">
+    <div class="title-bar">
+      <div class="title-bar-text">STOP!!! YOU ARE TYPING TOO FAST!!!</div>
+      <div class="title-bar-controls">
+        <button aria-label="Close" onclick="dismissStickyKeys()"></button>
       </div>
     </div>
-
+    <div class="window-body" style="padding: 15px; text-align: center;">
+      <p>In this particularly concerning manner, and for your well-being, we recommend enabling Sticky Keys in an effort to slow you down.</p>
+      <p style="margin-top: 10px;">Do you want to enable Sticky Keys? (we'll put slime on your keyboard, by the way)</p>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+        <button onclick="activateStickyKeys()">Yes</button>
+        <button onclick="dismissStickyKeys()">No</button>
+      </div>
+    </div>
   </div>
 
   <!-- start menu -->
@@ -736,16 +736,45 @@
     </div>
 
     <div id="reboot-sequence" tabindex="-1" aria-live="polite" aria-atomic="true">
-      <section id="boot-stage" class="reboot-stage" aria-labelledby="boot-stage-title">
-        <h1 id="boot-stage-title">Wind-down 98b</h1>
-        <p class="reboot-status" id="boot-status">Checking memory...</p>
-        <p class="reboot-status">Copyright (c) 1998+27 Wind-down Systems</p>
+      <section id="award-bios-stage" class="reboot-stage bios-stage" aria-labelledby="award-bios-title">
+        <div class="bios-screen">
+          <p class="bios-line bios-brand" id="award-bios-title">Award Modular BIOS v4.51PG</p>
+          <p class="bios-line">An Energy Star Ally</p>
+          <p class="bios-line">Copyright (C) 1984-99, Award Software, Inc.</p>
+          <p class="bios-line bios-gap">Wind-down 98b BIOS V1.0</p>
+          <p class="bios-line">Main Processor : Pentium II 910MHz</p>
+          <p class="bios-line">Memory Testing : <span id="bios-memory">000000K</span> OK</p>
+          <p class="bios-line bios-footer">Press DEL to enter SETUP, ALT+F2 to enter AWDFLASH</p>
+        </div>
       </section>
 
-      <section id="load-stage" class="reboot-stage" aria-labelledby="load-stage-title">
-        <h1 id="load-stage-title">Starting Wind-down 98b</h1>
-        <p class="reboot-status" id="load-status">Loading system files...</p>
-        <div class="reboot-progress" role="progressbar" aria-label="Operating system load progress" aria-valuemin="0"
+      <section id="post-stage" class="reboot-stage bios-stage" aria-labelledby="post-title">
+        <div class="bios-screen">
+          <p class="bios-line bios-brand" id="post-title">Award Plug and Play BIOS Extension v1.0A</p>
+          <p class="bios-line">Copyright (C) 1999, Award Software, Inc.</p>
+          <div id="post-lines" aria-live="polite">
+            <p class="bios-line post-line">Detecting IDE Primary Master ... WIND-DOWN HDD</p>
+            <p class="bios-line post-line">Detecting IDE Primary Slave  ... None</p>
+            <p class="bios-line post-line">Detecting USB Controller    ... Found</p>
+            <p class="bios-line post-line">Initializing Plug and Play cards ...</p>
+            <p class="bios-line post-line">PCI device listing ...</p>
+            <p class="bios-line post-line">Bus No. Device No. Func No. Vendor ID Device ID</p>
+            <p class="bios-line post-line">00     01          00        1039     5513     Display controller</p>
+            <p class="bios-line post-line bios-ok">All tests passed. Booting from C:</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="windows-stage" class="reboot-stage windows-stage" aria-labelledby="windows-title" data-background-image="">
+        <div class="windows-boot-art" aria-hidden="true">
+          <span class="windows-pane pane-red"></span>
+          <span class="windows-pane pane-green"></span>
+          <span class="windows-pane pane-blue"></span>
+          <span class="windows-pane pane-yellow"></span>
+        </div>
+        <h1 id="windows-title">Microsoft Windows 98</h1>
+        <p id="windows-status" class="windows-status">Starting Windows...</p>
+        <div class="windows-progress" role="progressbar" aria-label="Windows load progress" aria-valuemin="0"
           aria-valuemax="100" aria-valuenow="0">
           <span id="load-progress"></span>
         </div>
