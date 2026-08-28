@@ -1013,6 +1013,7 @@ function rebootTimeout(callback, delay) {
 
 function snapshotSettings() {
   const wrapper = document.getElementById('desktop-wrapper');
+  const windowsStage = document.getElementById('windows-stage');
   const cursorStyle = document.getElementById('custom-cursor-style');
   const cursorWarning = document.getElementById('cursor-warning');
   const mouseWarning = document.getElementById('mouse-warning');
@@ -1271,8 +1272,8 @@ function resetRebootOverlay() {
   showRebootStage('');
   const progress = document.getElementById('load-progress');
   if (progress) {
-    progress.style.width = '0%';
-    progress.parentElement?.setAttribute('aria-valuenow', '0');
+    progress.style.width = '100%';
+    progress.parentElement?.setAttribute('aria-valuenow', '100');
   }
   document.querySelectorAll('#post-lines .post-line').forEach(line => {
     line.style.visibility = 'hidden';
@@ -1335,8 +1336,8 @@ function startReboot() {
   const postLines = Array.from(document.querySelectorAll('#post-lines .post-line'));
   postLines.forEach(line => { line.style.visibility = 'hidden'; });
   const progress = document.getElementById('load-progress');
-  if (progress) progress.style.width = '0%';
-  if (progress?.parentElement) progress.parentElement.setAttribute('aria-valuenow', '0');
+  if (progress) progress.style.width = '100%';
+  if (progress?.parentElement) progress.parentElement.setAttribute('aria-valuenow', '100');
 
   showRebootStage('award-bios-stage');
   const updateMemory = step => {
@@ -1366,26 +1367,15 @@ function startReboot() {
     const status = document.getElementById('windows-status');
     if (status) status.textContent = 'Starting Windows...';
     rebootTimeout(() => {
-      let value = 0;
-      const progressBar = progress?.parentElement;
-      const interval = Math.max(20, REBOOT_TIMINGS.windowsProgressInterval);
-      const increment = 100 * interval / REBOOT_TIMINGS.windowsLoadDuration;
-      rebootProgressInterval = setInterval(() => {
-        value = Math.min(100, value + increment);
-        if (progress) progress.style.width = value + '%';
-        if (progressBar) progressBar.setAttribute('aria-valuenow', String(Math.round(value)));
-        if (status && value >= 65) status.textContent = 'Loading system components...';
-        if (value >= 100) {
-          clearInterval(rebootProgressInterval);
-          rebootProgressInterval = null;
-          rebootTimeout(() => {
-            showRebootStage('login-stage');
-            const loginStatus = document.getElementById('login-status');
-            if (loginStatus) loginStatus.textContent = 'System ready.';
-            document.getElementById('login-user')?.focus();
-          }, REBOOT_TIMINGS.windowsEndPause + REBOOT_TIMINGS.loginReadyDelay);
-        }
-      }, interval);
+      if (progress) progress.style.width = '100%';
+      if (progress?.parentElement) progress.parentElement.setAttribute('aria-valuenow', '100');
+      if (status) status.textContent = 'Loading system components...';
+      rebootTimeout(() => {
+        showRebootStage('login-stage');
+        const loginStatus = document.getElementById('login-status');
+        if (loginStatus) loginStatus.textContent = 'System ready.';
+        document.getElementById('login-user')?.focus();
+      }, REBOOT_TIMINGS.windowsLoadDuration + REBOOT_TIMINGS.windowsEndPause + REBOOT_TIMINGS.loginReadyDelay);
     }, REBOOT_TIMINGS.windowsStartDelay);
   }
 }
@@ -1772,13 +1762,20 @@ function initializeTrash() {
 
 // RECURSIVE HELP WINDOWS
 let helpWindowCounter = 0;
+// Keep accidental click storms from creating an unresponsive tab.
+const MAX_HELP_WINDOWS = 500;
 
 function spawnHelpWindow() {
+  if (helpWindowCounter >= MAX_HELP_WINDOWS) return;
+
+  const desktop = document.getElementById('desktop');
+  if (!desktop) return;
+
   helpWindowCounter++;
   const newWindow = document.createElement('div');
   newWindow.className = 'window';
   newWindow.id = 'help-clone-' + helpWindowCounter;
-  newWindow.style.cssText = `width: 300px; position: absolute; top: ${40 + (helpWindowCounter * 20)}vh; left: ${10 + (helpWindowCounter * 3)}vw; z-index: ${highestZIndex++};`;
+  newWindow.style.cssText = `width: min(300px, calc(100vw - 16px)); box-sizing: border-box; position: absolute; z-index: ${highestZIndex++};`;
 
   newWindow.innerHTML = `
         <div class="title-bar">
@@ -1789,7 +1786,7 @@ function spawnHelpWindow() {
           </div>
         </div>
         <div class="window-body">
-          <p style="margin-top: 15px;"> <img src="LOCAL/MEDIA/HELP/help3.ico"
+          <p style="margin-top: 15px;"> <img src="MEDIA/help3.ico"
               style="margin-right: 15px; position: relative; top: -5px; float: left;">That help window doesn't need to
             have it's own<br>help window, silly. What did you expect?</p>
           <button class="default" onclick="closeWindow(this)"
@@ -1797,7 +1794,22 @@ function spawnHelpWindow() {
         </div>
       `;
 
-  document.getElementById('desktop').appendChild(newWindow);
+  desktop.appendChild(newWindow);
+
+  // Repeat a compact cascade instead of pushing later windows below the viewport.
+  // The desktop is clipped above the taskbar, so use its measured dimensions.
+  const cascadeStep = 28;
+  const maxLeft = Math.max(0, desktop.clientWidth - newWindow.offsetWidth - 8);
+  const maxTop = Math.max(0, desktop.clientHeight - newWindow.offsetHeight - 8);
+  const columns = Math.max(1, Math.floor(Math.max(0, maxLeft - 16) / cascadeStep) + 1);
+  const rows = Math.max(1, Math.floor(Math.max(0, maxTop - 16) / cascadeStep) + 1);
+  const slot = (helpWindowCounter - 1) % (columns * rows);
+  const column = Math.floor(slot / rows);
+  const row = slot % rows;
+
+  newWindow.style.left = Math.min(maxLeft, 16 + column * cascadeStep) + 'px';
+  newWindow.style.top = Math.min(maxTop, 16 + row * cascadeStep) + 'px';
+
   dragElement(newWindow);
 
   newWindow.addEventListener('mousedown', () => {
@@ -2285,6 +2297,7 @@ function changeWallpaper() {
     wrapper.style.backgroundRepeat = "no-repeat";
   }
 }
+
 
 // Prevent the mobile browser from panning/overscrolling the page while
 // dragging windows. Scrollable elements inside windows are still allowed

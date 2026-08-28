@@ -732,19 +732,19 @@
   <div id="shutdown-overlay" role="dialog" aria-modal="true" aria-labelledby="shutdown-dialog-title">
     <div id="shutdown-message" style="display: none;">
       <h1 id="shutdown-dialog-title" style="color: #ffaa00; font-size: 24px;">It's now safe to turn off your computer.</h1>
-      <button id="reboot-button" type="button" onclick="startReboot()">Reboot</button>
+      <span id="reboot-button" onclick="startReboot()" style="color: #ffaa00; cursor: url('../help/MEDIA/CPoint.cur'), pointer; text-decoration: underline;">Reboot</span>
     </div>
 
     <div id="reboot-sequence" tabindex="-1" aria-live="polite" aria-atomic="true">
       <section id="award-bios-stage" class="reboot-stage bios-stage" aria-labelledby="award-bios-title">
         <div class="bios-screen">
-          <p class="bios-line bios-brand" id="award-bios-title">Award Modular BIOS v4.51PG</p>
-          <p class="bios-line">An Energy Star Ally</p>
-          <p class="bios-line">Copyright (C) 1984-99, Award Software, Inc.</p>
-          <p class="bios-line bios-gap">Wind-down 98b BIOS V1.0</p>
-          <p class="bios-line">Main Processor : Pentium II 910MHz</p>
+          <p class="bios-line bios-brand" id="award-bios-title">Plaque Modular BIOS v4.51PG</p>
+          <p class="bios-line">An EcoEnergy Ally</p>
+          <p class="bios-line">Copyright (C) 1984-99, Plaque Software, Inc.</p>
+          <p class="bios-line bios-gap">Wind-down 98b BIOS V1.9.8</p>
+          <p class="bios-line">Main Processor : Mental(R) Titanium 2 910MHz</p>
           <p class="bios-line">Memory Testing : <span id="bios-memory">000000K</span> OK</p>
-          <p class="bios-line bios-footer">Press DEL to enter SETUP, ALT+F2 to enter AWDFLASH</p>
+          <p class="bios-line bios-footer">Press DEL to enter SETUP, ALT+F4 to ???</p>
         </div>
       </section>
 
